@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "lib": ["ES2015", "DOM"],
+    "lib": ["ES2018", "DOM", "ES2019.String"],
     "target": "es5",
     "module": "commonjs",
     "declaration": true,
@@ -9,5 +9,5 @@
     "sourceMap": true
   },
   "include": ["src"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }

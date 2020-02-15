@@ -1,13 +1,14 @@
 {
   "name": "sasjs",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "JavaScript adapter for SAS",
   "scripts": {
     "build": "rimraf build && webpack",
     "package:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm pack",
     "publish:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm publish",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
-    "lint": "tslint -p tsconfig.json"
+    "lint": "tslint -p tsconfig.json",
+    "test": "jest"
   },
   "keywords": [],
   "author": "Allan Bowe <support@macropeople.com>",
@@ -21,9 +22,12 @@
     "standard-version": "^7.1.0"
   },
   "devDependencies": {
+    "@types/jest": "^25.1.2",
     "cp": "^0.2.0",
+    "jest": "^25.1.0",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.2",
+    "ts-jest": "^25.2.0",
     "ts-loader": "^6.2.1",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
