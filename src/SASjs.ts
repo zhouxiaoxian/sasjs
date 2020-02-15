@@ -315,7 +315,12 @@ export default class SASjs {
               self.loginFormData = loginForm;
               resolve({ login: false });
             } else {
-              resolve(response);
+              if (this.sasjsConfig.serverType === "SAS9") {
+                const jsonResponseText = this.parseSAS9Response(response);
+                resolve(jsonResponseText);
+              } else {
+                resolve(response);
+              }
             }
           }
         })
@@ -332,6 +337,19 @@ export default class SASjs {
     } catch (e) {
       this.userName = "";
     }
+  }
+
+  private parseSAS9Response(response: string) {
+    let sas9Response = "";
+    try {
+      sas9Response = response
+        .split(">>weboutBEGIN<<")[1]
+        .split(">>weboutEND<<")[0];
+    } catch (e) {
+      sas9Response = "";
+    }
+
+    return sas9Response;
   }
 
   private parseLogFromResponse(response: any, program: string) {
