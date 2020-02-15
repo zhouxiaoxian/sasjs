@@ -1,9 +1,9 @@
 {
   "name": "sasjs",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "JavaScript adapter for SAS",
   "scripts": {
-    "build": "rimraf build && tsc",
+    "build": "rimraf build && webpack",
     "package:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm pack",
     "publish:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm publish",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
@@ -17,7 +17,6 @@
   },
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.19.2",
     "moment": "^2.24.0",
     "standard-version": "^7.1.0"
   },
@@ -28,6 +27,9 @@
     "ts-loader": "^6.2.1",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "uglifyjs-webpack-plugin": "^2.2.0",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
   }
 }

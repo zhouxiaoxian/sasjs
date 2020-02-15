@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as moment from "moment";
 import { SASjsConfig } from "./SASjsConfig";
 import { SASjsRequest } from "./SASjsRequest";
@@ -128,10 +127,7 @@ export default class SASjs {
   public logOut() {
     return new Promise((resolve, reject) => {
       const logOutURL = `${this.baseURL}${this.logoutUrl}`;
-      axios({
-        method: "get",
-        url: logOutURL
-      })
+      fetch(logOutURL)
         .then(() => {
           resolve(true);
         })
