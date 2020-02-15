@@ -132,10 +132,10 @@ export default class SASjs {
         method: "get",
         url: logOutURL
       })
-        .then(response => {
+        .then(() => {
           resolve(true);
         })
-        .catch(e => {
+        .catch((e: Error) => {
           reject(e);
         });
     });
@@ -170,7 +170,7 @@ export default class SASjs {
         .then(response => {
           return resolve(self.loginSuccess(response, loginParams));
         })
-        .catch(err => reject(err));
+        .catch((err: Error) => reject(err));
     });
   }
 
@@ -298,8 +298,8 @@ export default class SASjs {
             if (this.retryCount < this.retryLimit) {
               this.retryCount++;
               this.request(programName, data, debug, params)
-                .then(res => resolve(res))
-                .catch(err => reject(err));
+                .then((res: any) => resolve(res))
+                .catch((err: Error) => reject(err));
             } else {
               this.retryCount = 0;
               reject(response);
@@ -319,7 +319,7 @@ export default class SASjs {
             }
           }
         })
-        .catch(e => {
+        .catch((e: Error) => {
           reject(e);
         });
     });
@@ -356,8 +356,8 @@ export default class SASjs {
             method: "GET",
             referrerPolicy: "same-origin"
           })
-            .then(res => res.text())
-            .then(res => {
+            .then((res: any) => res.text())
+            .then((res: any) => {
               let responseJson;
               let logUri = "";
               let pgmData = "";
@@ -382,13 +382,13 @@ export default class SASjs {
                     .then((logContent: any) => {
                       this.appendSasjsRequest(logContent, program, pgmData);
                     })
-                    .catch(err => {
+                    .catch((err: Error) => {
                       console.log(err);
                     });
                 }
               }
             })
-            .catch(err => {
+            .catch((err: Error) => {
               console.log(err);
             });
         }
@@ -401,9 +401,9 @@ export default class SASjs {
       fetch(logLink, {
         method: "GET"
       })
-        .then(response => response.text())
-        .then(response => resolve(response))
-        .catch(err => reject(err));
+        .then((response: any) => response.text())
+        .then((response: any) => resolve(response))
+        .catch((err: Error) => reject(err));
     });
   }
 
