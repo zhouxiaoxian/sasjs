@@ -179,8 +179,8 @@ export default class SASjs {
         .map((row: any) => row[field].length)
         .sort((a: number, b: number) => b - a)[0];
       return `${field}:$${
-        longestValueForField ? longestValueForField : "best."
-      }`;
+        longestValueForField ? longestValueForField : "best"
+      }.`;
     });
 
     csvTest = data.map((row: any) => {
