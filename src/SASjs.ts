@@ -421,12 +421,18 @@ export default class SASjs {
     });
   }
 
-  private appendSasjsRequest(logLink: any, program: string, pgmData: any) {
+  private appendSasjsRequest(log: any, program: string, pgmData: any) {
+    let sourceCode = pgmData;
+    if (this.sasjsConfig.serverType === "SAS9") {
+      sourceCode = this.parseSAS9SourceCode(log);
+    }
+    const generatedCode = this.parseGeneratedCode(log);
     this.sasjsRequests.push({
-      logLink,
+      logLink: log,
       serviceLink: program,
       timestamp: moment(moment.now()),
-      pgmCode: pgmData
+      sourceCode,
+      generatedCode
     });
 
     if (this.sasjsRequests.length > 20) {
@@ -434,6 +440,24 @@ export default class SASjs {
     }
 
     console.log(this.sasjsRequests);
+  }
+
+  private parseSAS9SourceCode(log: string) {
+    const isSourceCodeLine = (line: string) =>
+      line
+        .trim()
+        .substring(0, 10)
+        .trimStart()
+        .match(/^\d/);
+    const logLines = log.split("\n").filter(isSourceCodeLine);
+    return logLines.join("\r\n");
+  }
+
+  private parseGeneratedCode(log: string) {
+    const isGeneratedCodeLine = (line: string) =>
+      line.trim().startsWith("MPRINT");
+    const logLines = log.split("\n").filter(isGeneratedCodeLine);
+    return logLines.join("\r\n");
   }
 
   public getSasRequests() {
