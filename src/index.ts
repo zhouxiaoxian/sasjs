@@ -1,11 +1,23 @@
-import * as moment from "moment";
-import { SASjsConfig } from "./SASjsConfig";
-import { SASjsRequest } from "./SASjsRequest";
+export interface SASjsRequest {
+  serviceLink: string;
+  timestamp: Date;
+  sourceCode: string;
+  generatedCode: string;
+  logLink: string;
+}
+
+export class SASjsConfig {
+  baseURL: string = "";
+  port: number | null = null;
+  pathSAS9: string = "";
+  pathSASViya: string = "";
+  programRoot: string = "";
+  serverType: string = "";
+  debug: boolean = true;
+}
 
 export default class SASjs {
-  public debugState = true;
-  // Config
-  private sasjsConfig: SASjsConfig = new SASjsConfig();
+  private sasjsConfig = new SASjsConfig();
 
   private baseURL: string = "";
   private jobsPath: string = "";
@@ -25,7 +37,8 @@ export default class SASjs {
     pathSAS9: "/SASStoredProcess/do",
     pathSASViya: "/SASJobExecution",
     programRoot: "/Public/seedapp",
-    serverType: "SASVIYA"
+    serverType: "SASVIYA",
+    debug: true
   };
 
   constructor(config?: any) {
@@ -229,7 +242,7 @@ export default class SASjs {
       params["_csrf"] = this._csrf;
     }
 
-    if (this.debugState) {
+    if (this.sasjsConfig.debug) {
       params["_omittextlog"] = "false";
       params["_omitsessionresults"] = "false";
       if (this.sasjsConfig.serverType === "SAS9") {
@@ -352,7 +365,7 @@ export default class SASjs {
     if (this.sasjsConfig.serverType === "SAS9") {
       this.appendSasjsRequest(response, program, null);
     } else {
-      if (!this.debugState) {
+      if (!this.sasjsConfig.debug) {
         this.appendSasjsRequest(null, program, null);
       } else {
         let jsonResponse;
@@ -430,7 +443,7 @@ export default class SASjs {
     this.sasjsRequests.push({
       logLink: log,
       serviceLink: program,
-      timestamp: moment(moment.now()),
+      timestamp: new Date(),
       sourceCode,
       generatedCode
     });
@@ -467,7 +480,7 @@ export default class SASjs {
 }
 
 const compareTimestamps = (a: SASjsRequest, b: SASjsRequest) => {
-  return b.timestamp.diff(a.timestamp);
+  return b.timestamp.getTime() - a.timestamp.getTime();
 };
 
 function serialize(obj: any) {
