@@ -76,6 +76,10 @@ export default class SASjs {
     return this.userName;
   }
 
+  public setDebugState(value: boolean) {
+    this.sasjsConfig.debug = value;
+  }
+
   private getLoginURL = (matches: RegExpExecArray) => {
     let parsedURL = matches[1].replace(/\?.*/, "");
     if (parsedURL[0] === "/") {
