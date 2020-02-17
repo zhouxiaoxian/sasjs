@@ -7,11 +7,11 @@ export interface SASjsRequest {
 }
 
 export class SASjsConfig {
-  baseURL: string = "";
+  serverUrl: string = "";
   port: number | null = null;
   pathSAS9: string = "";
   pathSASViya: string = "";
-  programRoot: string = "";
+  appLoc: string = "";
   serverType: string = "";
   debug: boolean = true;
 }
@@ -19,9 +19,9 @@ export class SASjsConfig {
 export default class SASjs {
   private sasjsConfig = new SASjsConfig();
 
-  private baseURL: string = "";
+  private serverUrl: string = "";
   private jobsPath: string = "";
-  private programRoot: string = "";
+  private appLoc: string = "";
   private logoutUrl: string = "";
   private loginFormData: any = null;
   private loginLink: string = "";
@@ -32,17 +32,17 @@ export default class SASjs {
   private userName: string = "";
 
   private defaultConfig: SASjsConfig = {
-    baseURL: " ",
+    serverUrl: " ",
     port: null,
     pathSAS9: "/SASStoredProcess/do",
     pathSASViya: "/SASJobExecution",
-    programRoot: "/Public/seedapp",
+    appLoc: "/Public/seedapp",
     serverType: "SASVIYA",
     debug: true
   };
 
   constructor(config?: any) {
-    this.loginLink = `${this.baseURL}/SASLogon/login.do`;
+    this.loginLink = `${this.serverUrl}/SASLogon/login.do`;
 
     if (config) {
       this.sasjsConfig = config;
@@ -54,14 +54,14 @@ export default class SASjs {
   }
 
   private configSetup() {
-    this.baseURL = this.sasjsConfig.port
-      ? this.sasjsConfig.baseURL + ":" + this.sasjsConfig.port
-      : this.sasjsConfig.baseURL;
+    this.serverUrl = this.sasjsConfig.port
+      ? this.sasjsConfig.serverUrl + ":" + this.sasjsConfig.port
+      : this.sasjsConfig.serverUrl;
     this.jobsPath =
       this.sasjsConfig.serverType === "SASVIYA"
         ? this.sasjsConfig.pathSASViya
         : this.sasjsConfig.pathSAS9;
-    this.programRoot = this.sasjsConfig.programRoot;
+    this.appLoc = this.sasjsConfig.appLoc;
     this.logoutUrl =
       this.sasjsConfig.serverType === "SAS9"
         ? "/SASLogon/logout?"
@@ -85,8 +85,8 @@ export default class SASjs {
     if (parsedURL[0] === "/") {
       parsedURL = parsedURL.substr(1);
 
-      const tempLoginLink = this.baseURL
-        ? `${this.baseURL}/${parsedURL}`
+      const tempLoginLink = this.serverUrl
+        ? `${this.serverUrl}/${parsedURL}`
         : `${parsedURL}`;
 
       if (this.sasjsConfig.serverType === "SAS9") {
@@ -143,7 +143,7 @@ export default class SASjs {
 
   public logOut() {
     return new Promise((resolve, reject) => {
-      const logOutURL = `${this.baseURL}${this.logoutUrl}`;
+      const logOutURL = `${this.serverUrl}${this.logoutUrl}`;
       fetch(logOutURL)
         .then(() => {
           resolve(true);
@@ -233,10 +233,10 @@ export default class SASjs {
     debug: boolean = false,
     params?: any
   ) {
-    const program = this.programRoot
-      ? this.programRoot.replace(/\/?$/, "/") + programName.replace(/^\//, "")
+    const program = this.appLoc
+      ? this.appLoc.replace(/\/?$/, "/") + programName.replace(/^\//, "")
       : programName;
-    const apiLink = `${this.baseURL}${this.jobsPath}/?_program=${program}`;
+    const apiLink = `${this.serverUrl}${this.jobsPath}/?_program=${program}`;
 
     if (!params) {
       params = {};
@@ -383,7 +383,7 @@ export default class SASjs {
         if (jsonResponse) {
           const jobUrl = jsonResponse["SYS_JES_JOB_URI"];
 
-          fetch(this.baseURL + jobUrl, {
+          fetch(this.serverUrl + jobUrl, {
             method: "GET",
             referrerPolicy: "same-origin"
           })
@@ -406,7 +406,7 @@ export default class SASjs {
                 ).uri;
                 logUri += "/content";
 
-                logUri = this.baseURL + logUri;
+                logUri = this.serverUrl + logUri;
 
                 if (logUri) {
                   this.fetchLogFileContent(logUri)
