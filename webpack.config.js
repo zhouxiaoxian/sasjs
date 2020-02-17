@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 
 module.exports = {
-  entry: "./src/SASjs.ts",
+  entry: "./src/index.ts",
   mode: "production",
   optimization: {
     minimize: true,
