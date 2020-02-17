@@ -1,6 +1,6 @@
 {
   "name": "sasjs",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "JavaScript adapter for SAS",
   "scripts": {
     "build": "rimraf build && webpack",
