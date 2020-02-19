@@ -250,7 +250,7 @@ export default class SASjs {
       params["_omittextlog"] = "false";
       params["_omitsessionresults"] = "false";
       if (this.sasjsConfig.serverType === "SAS9") {
-        params["_debug"] = "log";
+        params["_debug"] = 131;
       }
     }
 
@@ -265,15 +265,29 @@ export default class SASjs {
     }
 
     if (data) {
-      for (const tableName in data) {
-        const name = tableName;
-        const csv = this.convertToCSV(data[tableName]);
+      if (this.sasjsConfig.serverType === "SAS9") {
+        // file upload approach
+        for (const tableName in data) {
+          const name = tableName;
+          const csv = this.convertToCSV(data[tableName]);
 
-        formData.append(
-          name,
-          new Blob([csv], { type: "application/csv" }),
-          `${name}.csv`
-        );
+          formData.append(
+            name,
+            new Blob([csv], { type: "application/csv" }),
+            `${name}.csv`
+          );
+        }
+      } else {
+        // param based approach
+        const sasjs_tables = [];
+        let tableCounter=0
+        for (const tableName in data) {
+          tableCounter++
+          sasjs_tables.push(tableName);
+          const csv = this.convertToCSV(data[tableName]);
+          params[`sasjs${tableCounter}data`] = csv;
+        }
+        params['sasjs_tables'] = sasjs_tables.join(' ');
       }
     }
 
