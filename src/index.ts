@@ -60,7 +60,7 @@ export default class SASjs {
         ? this.sasjsConfig.pathSASViya
         : this.sasjsConfig.pathSAS9;
     this.appLoc = this.sasjsConfig.appLoc;
-    this.loginLink = `${this.serverUrl}/SASLogon/login`;
+    this.loginLink = `${this.serverUrl}/SASLogon/login.do`;
     this.logoutUrl =
       this.sasjsConfig.serverType === "SAS9"
         ? "/SASLogon/logout?"
