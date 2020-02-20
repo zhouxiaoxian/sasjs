@@ -41,9 +41,7 @@ export default class SASjs {
     debug: true
   };
 
-  constructor(config?: any) {
-    this.loginLink = `${this.serverUrl}/SASLogon/login.do`;
-
+  constructor(config?: SASjsConfig) {
     if (config) {
       this.sasjsConfig = config;
     } else {
@@ -62,6 +60,7 @@ export default class SASjs {
         ? this.sasjsConfig.pathSASViya
         : this.sasjsConfig.pathSAS9;
     this.appLoc = this.sasjsConfig.appLoc;
+    this.loginLink = `${this.serverUrl}/SASLogon/login.do`;
     this.logoutUrl =
       this.sasjsConfig.serverType === "SAS9"
         ? "/SASLogon/logout?"
@@ -273,15 +272,15 @@ export default class SASjs {
         }
       } else {
         // param based approach
-        const sasjs_tables = [];
-        let tableCounter=0
+        const sasjsTables = [];
+        let tableCounter = 0;
         for (const tableName in data) {
-          tableCounter++
-          sasjs_tables.push(tableName);
+          tableCounter++;
+          sasjsTables.push(tableName);
           const csv = this.convertToCSV(data[tableName]);
           params[`sasjs${tableCounter}data`] = csv;
         }
-        params['sasjs_tables'] = sasjs_tables.join(' ');
+        params["sasjs_tables"] = sasjsTables.join(" ");
       }
     }
     for (const key in params) {
