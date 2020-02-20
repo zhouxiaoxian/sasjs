@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.4.0"></a>
+# [1.4.0](https://github.com/macropeople/sasjs/compare/v1.3.0...v1.4.0) (2020-02-20)
+
+
+### Bug Fixes
+
+* putting param export in right place ([6372ea2](https://github.com/macropeople/sasjs/commit/6372ea2))
+
+
+### Features
+
+* switching from file based upload to params for Viya.  Fixes [#13](https://github.com/macropeople/sasjs/issues/13) ([2aeba78](https://github.com/macropeople/sasjs/commit/2aeba78))
+
+
+
 <a name="1.3.0"></a>
 # 1.3.0 (2020-02-17)
 
