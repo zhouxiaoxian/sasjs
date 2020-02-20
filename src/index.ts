@@ -60,7 +60,7 @@ export default class SASjs {
         ? this.sasjsConfig.pathSASViya
         : this.sasjsConfig.pathSAS9;
     this.appLoc = this.sasjsConfig.appLoc;
-    this.loginLink = `${this.serverUrl}/SASLogon/login.do`;
+    this.loginLink = `${this.serverUrl}/SASLogon/login`;
     this.logoutUrl =
       this.sasjsConfig.serverType === "SAS9"
         ? "/SASLogon/logout?"
@@ -153,12 +153,18 @@ export default class SASjs {
     });
   }
 
-  public SASlogin(username: string, password: string, callback: any = null) {
+  public async SASlogin(username: string, password: string) {
     const loginParams: any = {
       _service: "default",
       username,
       password
     };
+
+    if (!this.loginFormData) {
+      const loginResponse = await fetch(this.loginLink);
+      const responseText = await loginResponse.text();
+      this.loginFormData = this.logInRequired(responseText);
+    }
 
     for (const key in this.loginFormData) {
       loginParams[key] = this.loginFormData[key];
