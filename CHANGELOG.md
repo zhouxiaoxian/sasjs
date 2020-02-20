@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.4.2"></a>
+## [1.4.2](https://github.com/macropeople/sasjs/compare/v1.4.0...v1.4.2) (2020-02-20)
+
+
+### Bug Fixes
+
+* premature assignment of loginLink ([0c8a967](https://github.com/macropeople/sasjs/commit/0c8a967))
+
+
+
 <a name="1.4.0"></a>
 # [1.4.0](https://github.com/macropeople/sasjs/compare/v1.3.0...v1.4.0) (2020-02-20)
 
