@@ -60,7 +60,7 @@ export default class SASjs {
         ? this.sasjsConfig.pathSASViya
         : this.sasjsConfig.pathSAS9;
     this.appLoc = this.sasjsConfig.appLoc;
-    this.loginLink = `${this.serverUrl}/SASLogon/login.do`;
+    this.loginLink = `${this.serverUrl}/SASLogon/login`;
     this.logoutUrl =
       this.sasjsConfig.serverType === "SAS9"
         ? "/SASLogon/logout?"
@@ -153,6 +153,16 @@ export default class SASjs {
     });
   }
 
+  public async checkSession() {
+    const loginResponse = await fetch(this.loginLink);
+    const responseText = await loginResponse.text();
+    const loginFormData = this.logInRequired(responseText);
+    if (loginFormData) {
+      this.loginFormData = loginFormData;
+    }
+    return Promise.resolve({ isLoggedIn: !!!loginFormData });
+  }
+
   public async SASlogin(username: string, password: string) {
     const loginParams: any = {
       _service: "default",
@@ -161,9 +171,10 @@ export default class SASjs {
     };
 
     if (!this.loginFormData) {
-      const loginResponse = await fetch(this.loginLink);
-      const responseText = await loginResponse.text();
-      this.loginFormData = this.logInRequired(responseText);
+      const { isLoggedIn } = await this.checkSession();
+      if (isLoggedIn) {
+        return Promise.resolve("User already logged in");
+      }
     }
 
     for (const key in this.loginFormData) {
@@ -400,46 +411,47 @@ export default class SASjs {
 
         if (jsonResponse) {
           const jobUrl = jsonResponse["SYS_JES_JOB_URI"];
-
-          fetch(this.serverUrl + jobUrl, {
-            method: "GET",
-            referrerPolicy: "same-origin"
-          })
-            .then((res: any) => res.text())
-            .then((res: any) => {
-              let responseJson;
-              let logUri = "";
-              let pgmData = "";
-
-              try {
-                responseJson = JSON.parse(res);
-              } catch (e) {
-                console.log("Error parsing json:", e);
-              }
-
-              if (responseJson) {
-                pgmData = responseJson.jobRequest.jobDefinition.code;
-                logUri = responseJson.links.find(
-                  (link: { rel: string }) => link.rel === "log"
-                ).uri;
-                logUri += "/content";
-
-                logUri = this.serverUrl + logUri;
-
-                if (logUri) {
-                  this.fetchLogFileContent(logUri)
-                    .then((logContent: any) => {
-                      this.appendSasjsRequest(logContent, program, pgmData);
-                    })
-                    .catch((err: Error) => {
-                      console.log(err);
-                    });
-                }
-              }
+          if (jobUrl) {
+            fetch(this.serverUrl + jobUrl, {
+              method: "GET",
+              referrerPolicy: "same-origin"
             })
-            .catch((err: Error) => {
-              console.log(err);
-            });
+              .then((res: any) => res.text())
+              .then((res: any) => {
+                let responseJson;
+                let logUri = "";
+                let pgmData = "";
+
+                try {
+                  responseJson = JSON.parse(res);
+                } catch (e) {
+                  console.log("Error parsing json:", e);
+                }
+
+                if (responseJson) {
+                  pgmData = responseJson.jobRequest.jobDefinition.code;
+                  logUri = responseJson.links.find(
+                    (link: { rel: string }) => link.rel === "log"
+                  ).uri;
+                  logUri += "/content";
+
+                  logUri = this.serverUrl + logUri;
+
+                  if (logUri) {
+                    this.fetchLogFileContent(logUri)
+                      .then((logContent: any) => {
+                        this.appendSasjsRequest(logContent, program, pgmData);
+                      })
+                      .catch((err: Error) => {
+                        console.log(err);
+                      });
+                  }
+                }
+              })
+              .catch((err: Error) => {
+                console.log(err);
+              });
+          }
         }
       }
     }
