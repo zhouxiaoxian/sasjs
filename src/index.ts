@@ -470,10 +470,13 @@ export default class SASjs {
 
   private appendSasjsRequest(log: any, program: string, pgmData: any) {
     let sourceCode = pgmData;
-    if (this.sasjsConfig.serverType === "SAS9") {
-      sourceCode = this.parseSAS9SourceCode(log);
+    let generatedCode = "";
+    if (log) {
+      if (this.sasjsConfig.serverType === "SAS9") {
+        sourceCode = this.parseSAS9SourceCode(log);
+      }
+      generatedCode = this.parseGeneratedCode(log);
     }
-    const generatedCode = this.parseGeneratedCode(log);
     this.sasjsRequests.push({
       logLink: log,
       serviceLink: program,
