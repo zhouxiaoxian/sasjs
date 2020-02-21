@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.5.0"></a>
+# [1.5.0](https://github.com/macropeople/sasjs/compare/v1.4.2...v1.5.0) (2020-02-21)
+
+
+### Bug Fixes
+
+* fetch login form data if not available ([d7e7b2f](https://github.com/macropeople/sasjs/commit/d7e7b2f))
+* revert unnecessary change ([34ed2a0](https://github.com/macropeople/sasjs/commit/34ed2a0))
+
+
+### Features
+
+* add checkSession API ([dc170fe](https://github.com/macropeople/sasjs/commit/dc170fe))
+
+
+
 <a name="1.4.2"></a>
 ## [1.4.2](https://github.com/macropeople/sasjs/compare/v1.4.0...v1.4.2) (2020-02-20)
 
