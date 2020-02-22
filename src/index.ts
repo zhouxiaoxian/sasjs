@@ -425,7 +425,7 @@ export default class SASjs {
                 try {
                   responseJson = JSON.parse(res);
                 } catch (e) {
-                  console.log("Error parsing json:", e);
+                  console.error("Error parsing json:", e);
                 }
 
                 if (responseJson) {
@@ -443,13 +443,13 @@ export default class SASjs {
                         this.appendSasjsRequest(logContent, program, pgmData);
                       })
                       .catch((err: Error) => {
-                        console.log(err);
+                        console.error("error getting log content:", err);
                       });
                   }
                 }
               })
               .catch((err: Error) => {
-                console.log(err);
+                console.error("error fetching viya job:",err);
               });
           }
         }
@@ -469,13 +469,18 @@ export default class SASjs {
   }
 
   private appendSasjsRequest(log: any, program: string, pgmData: any) {
-    let sourceCode = pgmData;
+    let sourceCode= "";
     let generatedCode = "";
+
     if (log) {
       if (this.sasjsConfig.serverType === "SAS9") {
         sourceCode = this.parseSAS9SourceCode(log);
       }
       generatedCode = this.parseGeneratedCode(log);
+    }
+    if (this.sasjsConfig.serverType === "SASVIYA") {
+      const pgmLines= pgmData.split("\r")
+      sourceCode=pgmLines.join("\r\n");
     }
     this.sasjsRequests.push({
       logLink: log,
@@ -488,8 +493,6 @@ export default class SASjs {
     if (this.sasjsRequests.length > 20) {
       this.sasjsRequests.splice(0, 1);
     }
-
-    console.log(this.sasjsRequests);
   }
 
   private parseSAS9SourceCode(log: string) {
@@ -504,8 +507,12 @@ export default class SASjs {
   }
 
   private parseGeneratedCode(log: string) {
+    let startsWith="normal:";
+    if (this.sasjsConfig.serverType === "SAS9") {
+      startsWith="MPRINT";
+    }
     const isGeneratedCodeLine = (line: string) =>
-      line.trim().startsWith("MPRINT");
+      line.trim().startsWith(startsWith);
     const logLines = log.split("\n").filter(isGeneratedCodeLine);
     return logLines.join("\r\n");
   }
