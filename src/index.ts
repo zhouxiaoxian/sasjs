@@ -475,13 +475,13 @@ export default class SASjs {
     if (log) {
       if (this.sasjsConfig.serverType === "SAS9") {
         sourceCode = this.parseSAS9SourceCode(log);
+      } else {
+        const pgmLines= pgmData.split("\r")
+        sourceCode=pgmLines.join("\r\n");
       }
       generatedCode = this.parseGeneratedCode(log);
     }
-    if (this.sasjsConfig.serverType === "SASVIYA") {
-      const pgmLines= pgmData.split("\r")
-      sourceCode=pgmLines.join("\r\n");
-    }
+
     this.sasjsRequests.push({
       logLink: log,
       serviceLink: program,
