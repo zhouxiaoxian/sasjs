@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.5.3"></a>
+## [1.5.3](https://github.com/macropeople/sasjs/compare/v1.5.2...v1.5.3) (2020-02-22)
+
+
+### Bug Fixes
+
+* capturing and parsing program code in Viya, plus replacement of console logs with console errors ([f4d6ac7](https://github.com/macropeople/sasjs/commit/f4d6ac7))
+
+
+
 <a name="1.5.2"></a>
 ## [1.5.2](https://github.com/macropeople/sasjs/compare/v1.5.1...v1.5.2) (2020-02-22)
 
