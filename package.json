@@ -4,13 +4,13 @@
   "description": "JavaScript adapter for SAS",
   "scripts": {
     "build": "rimraf build && webpack",
-    "package:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm pack",
+    "package:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm pack && cp index.js ../dist/sasjs.js",
     "publish:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm publish",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "test": "jest"
   },
-  "keywords": [],
+  "keywords": ["sas","viya"],
   "author": "Allan Bowe <support@macropeople.com>",
   "repository": {
     "type": "git",
