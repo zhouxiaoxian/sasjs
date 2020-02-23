@@ -1,6 +1,6 @@
 {
   "name": "sasjs",
-  "version": "1.5.4",
+  "version": "1.6.0",
   "description": "JavaScript adapter for SAS",
   "scripts": {
     "build": "rimraf build && webpack",
@@ -10,7 +10,10 @@
     "lint": "tslint -p tsconfig.json",
     "test": "jest"
   },
-  "keywords": ["sas","viya"],
+  "keywords": [
+    "sas",
+    "viya"
+  ],
   "author": "Allan Bowe <support@macropeople.com>",
   "repository": {
     "type": "git",
