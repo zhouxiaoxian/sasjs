@@ -357,7 +357,7 @@ export default class SASjs {
               self.loginFormData = loginForm;
               resolve({ login: false });
             } else {
-              if (this.sasjsConfig.serverType === "SAS9") {
+              if (this.sasjsConfig.serverType === "SAS9" && this.sasjsConfig.debug) {
                 const jsonResponseText = this.parseSAS9Response(response);
                 resolve(jsonResponseText);
               } else {
@@ -389,6 +389,7 @@ export default class SASjs {
         .split(">>weboutEND<<")[0];
     } catch (e) {
       sas9Response = "";
+      console.error(e);
     }
 
     return sas9Response;
