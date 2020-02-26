@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.6.3"></a>
+## [1.6.3](https://github.com/macropeople/sasjs/compare/v1.6.2...v1.6.3) (2020-02-26)
+
+
+### Bug Fixes
+
+* always check session before trying to log in ([6f256ac](https://github.com/macropeople/sasjs/commit/6f256ac))
+
+
+
 <a name="1.6.2"></a>
 ## [1.6.2](https://github.com/macropeople/sasjs/compare/v1.6.1...v1.6.2) (2020-02-26)
 
