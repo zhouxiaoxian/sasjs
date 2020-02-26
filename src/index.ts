@@ -3,7 +3,7 @@ export interface SASjsRequest {
   timestamp: Date;
   sourceCode: string;
   generatedCode: string;
-  logLink: string;
+  logFile: string;
 }
 
 export class SASjsConfig {
@@ -484,7 +484,7 @@ export default class SASjs {
     }
 
     this.sasjsRequests.push({
-      logLink: log,
+      logFile: log,
       serviceLink: program,
       timestamp: new Date(),
       sourceCode,
