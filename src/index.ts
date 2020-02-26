@@ -169,12 +169,9 @@ export default class SASjs {
       username,
       password
     };
-
-    if (!this.loginFormData) {
-      const { isLoggedIn } = await this.checkSession();
-      if (isLoggedIn) {
-        return Promise.resolve("User already logged in");
-      }
+    const { isLoggedIn } = await this.checkSession();
+    if (isLoggedIn) {
+      return Promise.resolve("User already logged in");
     }
 
     for (const key in this.loginFormData) {
@@ -357,7 +354,10 @@ export default class SASjs {
               self.loginFormData = loginForm;
               resolve({ login: false });
             } else {
-              if (this.sasjsConfig.serverType === "SAS9" && this.sasjsConfig.debug) {
+              if (
+                this.sasjsConfig.serverType === "SAS9" &&
+                this.sasjsConfig.debug
+              ) {
                 const jsonResponseText = this.parseSAS9Response(response);
                 resolve(jsonResponseText);
               } else {
@@ -450,7 +450,7 @@ export default class SASjs {
                 }
               })
               .catch((err: Error) => {
-                console.error("error fetching viya job:",err);
+                console.error("Error fetching VIYA job", err);
               });
           }
         }
@@ -470,15 +470,15 @@ export default class SASjs {
   }
 
   private appendSasjsRequest(log: any, program: string, pgmData: any) {
-    let sourceCode= "";
+    let sourceCode = "";
     let generatedCode = "";
 
     if (log) {
       if (this.sasjsConfig.serverType === "SAS9") {
         sourceCode = this.parseSAS9SourceCode(log);
       } else {
-        const pgmLines= pgmData.split("\r")
-        sourceCode=pgmLines.join("\r\n");
+        const pgmLines = pgmData.split("\r");
+        sourceCode = pgmLines.join("\r\n");
       }
       generatedCode = this.parseGeneratedCode(log);
     }
@@ -508,9 +508,9 @@ export default class SASjs {
   }
 
   private parseGeneratedCode(log: string) {
-    let startsWith="normal:";
+    let startsWith = "normal:";
     if (this.sasjsConfig.serverType === "SAS9") {
-      startsWith="MPRINT";
+      startsWith = "MPRINT";
     }
     const isGeneratedCodeLine = (line: string) =>
       line.trim().startsWith(startsWith);
