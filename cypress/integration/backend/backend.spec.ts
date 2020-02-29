@@ -1,5 +1,6 @@
 /// <reference types="cypress" />
 import SASjs from "../../../src/index";
+import { any } from "cypress/types/bluebird";
 
 const adapter = new SASjs({
   serverUrl: Cypress.env("serverUrl"),
@@ -34,17 +35,28 @@ context("Testing SAS", () => {
     );
   });
 
-  it("Should make request", done => {
-    const data = {
-      sometable: [{ firstCol: "first col value" }]
-    };
-
-    const expectedData = [["first col value"]];
-
+  it("ARR, single string value", done => {
+    const data:any= {table1: [{ col1: "first col value" }]};
     makeRequest("common/sendArr", data).then((actualData: any) => {
-      expect(JSON.stringify(actualData.sometable)).to.be.equal(
-        JSON.stringify(expectedData)
-      );
+      expect(actualData.table1[0].col1).to.be.equal(data.table1[0][0]);
+      done();
+    });
+  });
+  it("OBJ, single string value", done => {
+    const data:any= {table1: [{ col1: "first col value" }]};
+    makeRequest("common/sendObj", data).then((actualData: any) => {
+      expect(actualData.table1[0].col1).to.be.equal(data.table1[0].COL1);
+      done();
+    });
+  });
+  it("ARR, long string (32765)", done => {
+    /* cannot use repeat() function due to strange typings */
+    let x='X';
+    for (var i=1;i <32765;i++){x=x+'X'}
+    const data:any= {table1: [{ col1: x}]};
+    makeRequest("common/sendArr", data).then((actualData: any) => {
+      console.log(x)
+      expect(actualData.table1[0].col1).to.be.equal(data.table1[0][0]);
       done();
     });
   });
