@@ -1,68 +1,78 @@
 /// <reference types="cypress" />
-import SASjs from '../../../src/index';
+import SASjs from "../../../src/index";
 
 const adapter = new SASjs({
-    serverUrl: "",
-    port: null,
-    pathSAS9: "/SASStoredProcess/do",
-    pathSASViya: "/SASJobExecution",
-    appLoc: "/Public/app",
-    serverType: "SAS9",
-    debug: true
+  serverUrl: Cypress.env("serverUrl"),
+  port: Cypress.env("port"),
+  pathSAS9: "/SASStoredProcess/do",
+  pathSASViya: "/SASJobExecution",
+  appLoc: Cypress.env("appLoc"),
+  serverType: Cypress.env("serverType"),
+  debug: Cypress.env("debug")
 });
 
-context('Testing SAS', () => {
-    it('User login', (done) => {
-        let userLoggedIn = false;
+context("Testing SAS", () => {
+  it("User login", done => {
+    let userLoggedIn = false;
 
-        adapter.SASlogin("", "")
-            .then(res => {
-                if (res.includes("You have signed in") ||
-                    res.includes("User already logged in")) {
-                        userLoggedIn = true;
-                    }
-
-                expect(userLoggedIn, "Login result").to.true;
-                done();
-            }, err => {
-                console.log(err);
-                done("User not logged");
-            });
-    });
-
-    it('Should make request', (done) => {
-        let data = {
-            sometable: [
-                {firstCol: 'first col value'}
-            ]
+    adapter.SASlogin(Cypress.env("username"), Cypress.env("password")).then(
+      (res: any) => {
+        if (
+          res.includes("You have signed in") ||
+          res.includes("User already logged in")
+        ) {
+          userLoggedIn = true;
         }
 
-        let excpectedData = [
-            ["first col value"]
-        ]
+        expect(userLoggedIn).to.equal(true);
+        done();
+      },
+      err => {
+        console.log(err);
+        done("User not logged");
+      }
+    );
+  });
 
-        let jsonResponse: any = null;
+  it("Should make request", done => {
+    const data = {
+      sometable: [{ firstCol: "first col value" }]
+    };
 
-        adapter.request("common/sendArr", data).then(
-            res => {
-                try {
-                    jsonResponse = JSON.parse(res);
-                } catch(e) {
-                    console.log(e);
-                    done("Response is not json");
-                }
+    const expectedData = [["first col value"]];
 
-                // expect(JSON.stringify(jsonResponse.sometable)).to.be.equal(JSON.stringify(excpectedData));
-                
-                if (JSON.stringify(jsonResponse.sometable) === JSON.stringify(excpectedData)) {
-                    done();
-                } else {
-                    done("Response is not as excpected");
-                }
-            }, err => {
-                console.error(err);
-                done("Request failed");
-        })
+    makeRequest("common/sendArr", data).then((actualData: any) => {
+      expect(JSON.stringify(actualData.sometable)).to.be.equal(
+        JSON.stringify(expectedData)
+      );
+      done();
     });
-})
-  
+  });
+});
+
+const makeRequest = (url: string, data: any): Promise<any> => {
+  let jsonResponse: any;
+  return new Promise((resolve, reject) => {
+    return adapter.request(url, data).then(
+      (res: any) => {
+        if (res.includes("449") || !res.includes(Object.keys(data)[0])) {
+          return adapter
+            .request(url, data)
+            .then((r: any) => resolve(JSON.parse(r)));
+        }
+        try {
+          jsonResponse = JSON.parse(res);
+        } catch (e) {
+          console.log(e);
+          reject("Response is not json");
+        }
+
+        resolve(jsonResponse);
+      },
+      err => {
+        console.error(err);
+        reject("Request failed");
+      }
+    );
+  });
+};

@@ -1,4 +1,13 @@
 {
-    "defaultCommandTimeout": 10000,
-    "chromeWebSecurity": false
+  "defaultCommandTimeout": 10000,
+  "chromeWebSecurity": false,
+  "env": {
+    "serverUrl": "",
+    "port": null,
+    "appLoc": "",
+    "serverType": "",
+    "debug": false,
+    "username": "",
+    "password": ""
+  }
 }
