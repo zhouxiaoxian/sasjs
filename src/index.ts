@@ -16,9 +16,18 @@ export class SASjsConfig {
   debug: boolean = true;
 }
 
+const defaultConfig: SASjsConfig = {
+  serverUrl: " ",
+  port: null,
+  pathSAS9: "/SASStoredProcess/do",
+  pathSASViya: "/SASJobExecution",
+  appLoc: "/Public/seedapp",
+  serverType: "SASVIYA",
+  debug: true
+};
+
 export default class SASjs {
   private sasjsConfig = new SASjsConfig();
-
   private serverUrl: string = "";
   private jobsPath: string = "";
   private appLoc: string = "";
@@ -30,40 +39,14 @@ export default class SASjs {
   private sasjsRequests: SASjsRequest[] = [];
   private userName: string = "";
 
-  private defaultConfig: SASjsConfig = {
-    serverUrl: " ",
-    port: null,
-    pathSAS9: "/SASStoredProcess/do",
-    pathSASViya: "/SASJobExecution",
-    appLoc: "/Public/seedapp",
-    serverType: "SASVIYA",
-    debug: true
-  };
-
   constructor(config?: SASjsConfig) {
     if (config) {
       this.sasjsConfig = config;
     } else {
-      this.sasjsConfig = this.defaultConfig;
+      this.sasjsConfig = defaultConfig;
     }
 
-    this.configSetup();
-  }
-
-  private configSetup() {
-    this.serverUrl = this.sasjsConfig.port
-      ? this.sasjsConfig.serverUrl + ":" + this.sasjsConfig.port
-      : this.sasjsConfig.serverUrl;
-    this.jobsPath =
-      this.sasjsConfig.serverType === "SASVIYA"
-        ? this.sasjsConfig.pathSASViya
-        : this.sasjsConfig.pathSAS9;
-    this.appLoc = this.sasjsConfig.appLoc;
-    this.loginUrl = `${this.serverUrl}/SASLogon/login`;
-    this.logoutUrl =
-      this.sasjsConfig.serverType === "SAS9"
-        ? "/SASLogon/logout?"
-        : "/SASLogon/logout.do?";
+    this.setupConfiguration();
   }
 
   public getSasjsConfig() {
@@ -78,74 +61,6 @@ export default class SASjs {
     this.sasjsConfig.debug = value;
   }
 
-  private setLoginUrl = (matches: RegExpExecArray) => {
-    let parsedURL = matches[1].replace(/\?.*/, "");
-    if (parsedURL[0] === "/") {
-      parsedURL = parsedURL.substr(1);
-
-      const tempLoginLink = this.serverUrl
-        ? `${this.serverUrl}/${parsedURL}`
-        : `${parsedURL}`;
-
-      let loginUrl = tempLoginLink;
-      if (this.sasjsConfig.serverType === "SAS9") {
-        loginUrl = this.getSas9LoginUrl(tempLoginLink);
-      }
-
-      this.loginUrl = loginUrl;
-    }
-  };
-
-  private getSas9LoginUrl = (loginUrl: string) => {
-    const tempLoginLinkArray = loginUrl.split(".");
-    const doIndex = tempLoginLinkArray.indexOf("do");
-
-    if (doIndex > -1) {
-      tempLoginLinkArray.splice(doIndex, 1);
-    }
-
-    return tempLoginLinkArray.join(".");
-  };
-
-  private async getLoginForm() {
-    const pattern: RegExp = /<form.+action="(.*Logon[^"]*).*>/;
-    const response = await fetch(this.loginUrl).then(r => r.text());
-    const matches = pattern.exec(response);
-    const formInputs: any = {};
-    if (matches && matches.length) {
-      this.setLoginUrl(matches);
-      const inputs = response.match(/<input.*"hidden"[^>]*>/g);
-      if (inputs) {
-        inputs.forEach((inputStr: string) => {
-          const valueMatch = inputStr.match(/name="([^"]*)"\svalue="([^"]*)/);
-          if (valueMatch && valueMatch.length) {
-            formInputs[valueMatch[1]] = valueMatch[2];
-          }
-        });
-      }
-    }
-    return Object.keys(formInputs).length ? formInputs : null;
-  }
-
-  private isLogInRequired = (response: any) => {
-    const pattern: RegExp = /<form.+action="(.*Logon[^"]*).*>/;
-    const matches = pattern.exec(response);
-    return !!(matches && matches.length);
-  };
-
-  public logOut() {
-    return new Promise((resolve, reject) => {
-      const logOutURL = `${this.serverUrl}${this.logoutUrl}`;
-      fetch(logOutURL)
-        .then(() => {
-          resolve(true);
-        })
-        .catch((e: Error) => {
-          reject(e);
-        });
-    });
-  }
-
   public async checkSession() {
     const loginResponse = await fetch(this.loginUrl);
     const responseText = await loginResponse.text();
@@ -157,7 +72,7 @@ export default class SASjs {
     });
   }
 
-  public async login(username: string, password: string) {
+  public async logIn(username: string, password: string) {
     const loginParams: any = {
       _service: "default",
       username,
@@ -168,7 +83,10 @@ export default class SASjs {
 
     const { isLoggedIn } = await this.checkSession();
     if (isLoggedIn) {
-      return Promise.resolve({ isLoggedIn, userName: this.userName });
+      return Promise.resolve({
+        isLoggedIn,
+        userName: this.userName
+      });
     }
 
     const loginForm = await this.getLoginForm();
@@ -194,44 +112,17 @@ export default class SASjs {
       .catch(e => Promise.reject(e));
   }
 
-  private convertToCSV(data: any) {
-    const replacer = (key: any, value: any) => (value === null ? "" : value);
-    const headerFields = Object.keys(data[0]);
-    let csvTest;
-    const headers = headerFields.map(field => {
-      const longestValueForField = data
-        .map((row: any) => row[field].length)
-        .sort((a: number, b: number) => b - a)[0];
-      return `${field}:$${
-        longestValueForField ? longestValueForField : "best"
-      }.`;
-    });
-
-    csvTest = data.map((row: any) => {
-      const fields = Object.keys(row)
-        .sort()
-        .map(fieldName => {
-          let value;
-          const currentCell = row[fieldName];
-
-          value = JSON.stringify(currentCell, replacer);
-          if (!value.includes(",")) {
-            value = value.replace(/"/g, "");
-          }
-
-          return value;
+  public logOut() {
+    return new Promise((resolve, reject) => {
+      const logOutURL = `${this.serverUrl}${this.logoutUrl}`;
+      fetch(logOutURL)
+        .then(() => {
+          resolve(true);
+        })
+        .catch((e: Error) => {
+          reject(e);
         });
-      return fields.join(",");
     });
-
-    let finalCSV =
-      headers.join(",").replace(/,/g, " ") + "\\rn" + csvTest.join("\\rn");
-    finalCSV = JSON.stringify(finalCSV)
-      .replace(/"/g, "")
-      .replace(/\\/g, '"')
-      .replace(/""rn/g, "\r\n");
-
-    return finalCSV;
   }
 
   public async request(programName: string, data: any, params?: any) {
@@ -241,7 +132,10 @@ export default class SASjs {
     const apiUrl = `${this.serverUrl}${this.jobsPath}/?_program=${program}`;
 
     const inputParams = params ? params : {};
-    const requestParams = { ...inputParams, ...this.getRequestParams() };
+    const requestParams = {
+      ...inputParams,
+      ...this.getRequestParams()
+    };
 
     const self = this;
 
@@ -252,7 +146,7 @@ export default class SASjs {
         // file upload approach
         for (const tableName in data) {
           const name = tableName;
-          const csv = this.convertToCSV(data[tableName]);
+          const csv = convertToCSV(data[tableName]);
 
           formData.append(
             name,
@@ -267,7 +161,7 @@ export default class SASjs {
         for (const tableName in data) {
           tableCounter++;
           sasjsTables.push(tableName);
-          const csv = this.convertToCSV(data[tableName]);
+          const csv = convertToCSV(data[tableName]);
           requestParams[`sasjs${tableCounter}data`] = csv;
         }
         requestParams["sasjs_tables"] = sasjsTables.join(" ");
@@ -519,6 +413,77 @@ export default class SASjs {
     const sortedRequests = this.sasjsRequests.sort(compareTimestamps);
     return sortedRequests;
   }
+
+  private setupConfiguration() {
+    this.serverUrl = this.sasjsConfig.port
+      ? this.sasjsConfig.serverUrl + ":" + this.sasjsConfig.port
+      : this.sasjsConfig.serverUrl;
+    this.jobsPath =
+      this.sasjsConfig.serverType === "SASVIYA"
+        ? this.sasjsConfig.pathSASViya
+        : this.sasjsConfig.pathSAS9;
+    this.appLoc = this.sasjsConfig.appLoc;
+    this.loginUrl = `${this.serverUrl}/SASLogon/login`;
+    this.logoutUrl =
+      this.sasjsConfig.serverType === "SAS9"
+        ? "/SASLogon/logout?"
+        : "/SASLogon/logout.do?";
+  }
+
+  private setLoginUrl = (matches: RegExpExecArray) => {
+    let parsedURL = matches[1].replace(/\?.*/, "");
+    if (parsedURL[0] === "/") {
+      parsedURL = parsedURL.substr(1);
+
+      const tempLoginLink = this.serverUrl
+        ? `${this.serverUrl}/${parsedURL}`
+        : `${parsedURL}`;
+
+      let loginUrl = tempLoginLink;
+      if (this.sasjsConfig.serverType === "SAS9") {
+        loginUrl = this.getSas9LoginUrl(tempLoginLink);
+      }
+
+      this.loginUrl = loginUrl;
+    }
+  };
+
+  private getSas9LoginUrl = (loginUrl: string) => {
+    const tempLoginLinkArray = loginUrl.split(".");
+    const doIndex = tempLoginLinkArray.indexOf("do");
+
+    if (doIndex > -1) {
+      tempLoginLinkArray.splice(doIndex, 1);
+    }
+
+    return tempLoginLinkArray.join(".");
+  };
+
+  private async getLoginForm() {
+    const pattern: RegExp = /<form.+action="(.*Logon[^"]*).*>/;
+    const response = await fetch(this.loginUrl).then(r => r.text());
+    const matches = pattern.exec(response);
+    const formInputs: any = {};
+    if (matches && matches.length) {
+      this.setLoginUrl(matches);
+      const inputs = response.match(/<input.*"hidden"[^>]*>/g);
+      if (inputs) {
+        inputs.forEach((inputStr: string) => {
+          const valueMatch = inputStr.match(/name="([^"]*)"\svalue="([^"]*)/);
+          if (valueMatch && valueMatch.length) {
+            formInputs[valueMatch[1]] = valueMatch[2];
+          }
+        });
+      }
+    }
+    return Object.keys(formInputs).length ? formInputs : null;
+  }
+
+  private isLogInRequired = (response: any) => {
+    const pattern: RegExp = /<form.+action="(.*Logon[^"]*).*>/;
+    const matches = pattern.exec(response);
+    return !!(matches && matches.length);
+  };
 }
 
 const compareTimestamps = (a: SASjsRequest, b: SASjsRequest) => {
@@ -539,4 +504,42 @@ function serialize(obj: any) {
     }
   }
   return str.join("&");
+}
+
+function convertToCSV(data: any) {
+  const replacer = (key: any, value: any) => (value === null ? "" : value);
+  const headerFields = Object.keys(data[0]);
+  let csvTest;
+  const headers = headerFields.map(field => {
+    const longestValueForField = data
+      .map((row: any) => row[field].length)
+      .sort((a: number, b: number) => b - a)[0];
+    return `${field}:$${longestValueForField ? longestValueForField : "best"}.`;
+  });
+
+  csvTest = data.map((row: any) => {
+    const fields = Object.keys(row)
+      .sort()
+      .map(fieldName => {
+        let value;
+        const currentCell = row[fieldName];
+
+        value = JSON.stringify(currentCell, replacer);
+        if (!value.includes(",")) {
+          value = value.replace(/"/g, "");
+        }
+
+        return value;
+      });
+    return fields.join(",");
+  });
+
+  let finalCSV =
+    headers.join(",").replace(/,/g, " ") + "\\rn" + csvTest.join("\\rn");
+  finalCSV = JSON.stringify(finalCSV)
+    .replace(/"/g, "")
+    .replace(/\\/g, '"')
+    .replace(/""rn/g, "\r\n");
+
+  return finalCSV;
 }
