@@ -26,6 +26,10 @@ const defaultConfig: SASjsConfig = {
   debug: true
 };
 
+/**
+ * SASjs is a JavaScript adapter for SAS.
+ *
+ */
 export default class SASjs {
   private sasjsConfig = new SASjsConfig();
   private serverUrl: string = "";
@@ -49,18 +53,34 @@ export default class SASjs {
     this.setupConfiguration();
   }
 
+  /**
+   * Returns the current SASjs configuration.
+   *
+   */
   public getSasjsConfig() {
     return this.sasjsConfig;
   }
 
+  /**
+   * Returns the username of the user currently logged in.
+   *
+   */
   public getUserName() {
     return this.userName;
   }
 
+  /**
+   * Sets the debug state.
+   * @param value - Boolean indicating debug state
+   */
   public setDebugState(value: boolean) {
     this.sasjsConfig.debug = value;
   }
 
+  /**
+   * Checks whether a session is active, or login is required
+   * @returns a promise which resolves with an object containing two values - a boolean `isLoggedIn`, and a string `userName`
+   */
   public async checkSession() {
     const loginResponse = await fetch(this.loginUrl);
     const responseText = await loginResponse.text();
@@ -72,6 +92,11 @@ export default class SASjs {
     });
   }
 
+  /**
+   * Logs into the SAS server with the supplied credentials
+   * @param username - a string representing the username
+   * @param password - a string representing the password
+   */
   public async logIn(username: string, password: string) {
     const loginParams: any = {
       _service: "default",
@@ -112,6 +137,9 @@ export default class SASjs {
       .catch(e => Promise.reject(e));
   }
 
+  /**
+   * Logs out of the configured SAS server
+   */
   public logOut() {
     return new Promise((resolve, reject) => {
       const logOutURL = `${this.serverUrl}${this.logoutUrl}`;
@@ -125,6 +153,12 @@ export default class SASjs {
     });
   }
 
+  /**
+   * Makes a request to the program specified.
+   * @param programName - a string representing the SAS program name
+   * @param data - an object containing the data to be posted
+   * @param params - an optional object with any additional parameters
+   */
   public async request(programName: string, data: any, params?: any) {
     const program = this.appLoc
       ? this.appLoc.replace(/\/?$/, "/") + programName.replace(/^\//, "")
