@@ -16,7 +16,7 @@ context("Testing SAS", () => {
   it("User login", done => {
     let userLoggedIn = false;
 
-    adapter.SASlogin(Cypress.env("username"), Cypress.env("password")).then(
+    adapter.logIn(Cypress.env("username"), Cypress.env("password")).then(
       (res: any) => {
         if (
           res.includes("You have signed in") ||
@@ -63,30 +63,3 @@ context("Testing SAS", () => {
     });
   });
 });
-
-const makeRequest = (url: string, data: any): Promise<any> => {
-  let jsonResponse: any;
-  return new Promise((resolve, reject) => {
-    return adapter.request(url, data).then(
-      (res: any) => {
-        if (res.includes("449") || !res.includes(Object.keys(data)[0])) {
-          return adapter
-            .request(url, data)
-            .then((r: any) => resolve(JSON.parse(r)));
-        }
-        try {
-          jsonResponse = JSON.parse(res);
-        } catch (e) {
-          console.log(e);
-          reject("Response is not json");
-        }
-
-        resolve(jsonResponse);
-      },
-      err => {
-        console.error(err);
-        reject("Request failed");
-      }
-    );
-  });
-};
