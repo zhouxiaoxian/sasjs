@@ -1,4 +1,4 @@
-import SASjs from "./SASjs";
+import SASjs from "./index";
 
 const adapter = new SASjs();
 

@@ -8,7 +8,8 @@
     "publish:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm publish",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
-    "test": "jest"
+    "test": "jest",
+    "cypress": "./node_modules/.bin/cypress open"
   },
   "keywords": [
     "sas",
@@ -24,8 +25,10 @@
     "standard-version": "^7.1.0"
   },
   "devDependencies": {
+    "@cypress/webpack-preprocessor": "^4.1.2",
     "@types/jest": "^25.1.2",
     "cp": "^0.2.0",
+    "cypress": "^4.1.0",
     "jest": "^25.1.0",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.2",
