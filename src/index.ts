@@ -226,7 +226,7 @@ export default class SASjs {
             }
           }
 
-          if (response.redirected) {
+          if (response.redirected && this.sasjsConfig.serverType === "SAS9") {
             return "redirected response - retry request";
           }
 
