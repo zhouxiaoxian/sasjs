@@ -37,15 +37,17 @@ context("Testing SAS", () => {
 
   it("ARR, single string value", done => {
     const data:any= {table1: [{ col1: "first col value" }]};
-    makeRequest("common/sendArr", data).then((actualData: any) => {
-      expect(actualData.table1[0].col1).to.be.equal(data.table1[0][0]);
+    adapter.request("common/sendArr", data).then((res: any) => {
+      expect(res.table1[0][0]).to.not.be.undefined
+      expect(res.table1[0][0]).to.be.equal(data.table1[0].col1);
       done();
     });
   });
   it("OBJ, single string value", done => {
     const data:any= {table1: [{ col1: "first col value" }]};
-    makeRequest("common/sendObj", data).then((actualData: any) => {
-      expect(actualData.table1[0].col1).to.be.equal(data.table1[0].COL1);
+    adapter.request("common/sendObj", data).then((res: any) => {
+      expect(res.table1[0].COL1).to.not.be.undefined
+      expect(res.table1[0].COL1).to.be.equal(data.table1[0].col1);
       done();
     });
   });
@@ -54,9 +56,9 @@ context("Testing SAS", () => {
     let x='X';
     for (var i=1;i <32765;i++){x=x+'X'}
     const data:any= {table1: [{ col1: x}]};
-    makeRequest("common/sendArr", data).then((actualData: any) => {
-      console.log(x)
-      expect(actualData.table1[0].col1).to.be.equal(data.table1[0][0]);
+    adapter.request("common/sendArr", data).then((res: any) => {
+      expect(res.table1[0][0]).to.not.be.undefined
+      expect(res.table1[0][0]).to.be.equal(data.table1[0].col1);
       done();
     });
   });
