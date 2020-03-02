@@ -254,9 +254,21 @@ export default class SASjs {
                 this.sasjsConfig.debug
               ) {
                 const jsonResponseText = this.parseSAS9Response(responseText);
-                resolve(JSON.parse(jsonResponseText));
+
+                if (jsonResponseText !== "") {
+                  resolve(JSON.parse(jsonResponseText));
+                } else {
+                  reject({
+                    MESSAGE: this.parseSAS9ErrorResponse(responseText)
+                  });
+                }
               } else {
-                resolve(JSON.parse(responseText));
+                try {
+                  let parsedJson = JSON.parse(responseText);
+                  resolve(parsedJson);
+                } catch (e) {
+                  reject({ MESSAGE: responseText });
+                }
               }
             }
           }
@@ -316,6 +328,28 @@ export default class SASjs {
     }
 
     return sas9Response;
+  }
+
+  private parseSAS9ErrorResponse(response: string) {
+    let logLines = response.split("\n");
+    let parsedLines: string[] = [];
+    let firstErrorLineIndex: number = -1;
+
+    logLines.map((line: string, index: number) => {
+      if (
+        line.toLowerCase().includes("error") &&
+        !line.toLowerCase().includes("this request completed with errors.") &&
+        firstErrorLineIndex === -1
+      ) {
+        firstErrorLineIndex = index;
+      }
+    });
+
+    for (let i = firstErrorLineIndex - 10; i <= firstErrorLineIndex + 10; i++) {
+      parsedLines.push(logLines[i]);
+    }
+
+    return parsedLines.join(", ");
   }
 
   private parseLogFromResponse(response: any, program: string) {
