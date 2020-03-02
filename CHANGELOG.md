@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.7.0"></a>
+# [1.7.0](https://github.com/macropeople/sasjs/compare/v1.6.5...v1.7.0) (2020-03-01)
+
+
+### Bug Fixes
+
+* adapter upgrade ([7c221dc](https://github.com/macropeople/sasjs/commit/7c221dc))
+* failing test ([12b29b0](https://github.com/macropeople/sasjs/commit/12b29b0))
+* retry on redirect only with SAS9 ([69d08e5](https://github.com/macropeople/sasjs/commit/69d08e5))
+* test rewrite ([aeb636b](https://github.com/macropeople/sasjs/commit/aeb636b))
+
+
+### Features
+
+*  tests for sasjs, also bumping cypress version and setting cypress tsconfig to ES6 (we'll be using cypress browsers) ([e8193c1](https://github.com/macropeople/sasjs/commit/e8193c1))
+*  tests for sasjs, also bumping cypress version and setting cypress tsconfig to ES6 (we'll be using cypress browsers) ([a197344](https://github.com/macropeople/sasjs/commit/a197344))
+
+
+
+<a name="1.6.5"></a>
+## [1.6.5](https://github.com/macropeople/sasjs/compare/v1.6.4...v1.6.5) (2020-03-01)
+
+
+
+<a name="1.6.4"></a>
+## [1.6.4](https://github.com/macropeople/sasjs/compare/v1.6.3...v1.6.4) (2020-03-01)
+
+
+
 <a name="1.6.3"></a>
 ## [1.6.3](https://github.com/macropeople/sasjs/compare/v1.6.2...v1.6.3) (2020-02-26)
 
