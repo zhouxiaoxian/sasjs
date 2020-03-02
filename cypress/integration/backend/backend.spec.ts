@@ -36,10 +36,32 @@ context("Testing SAS", () => {
 
   it("Should make request", done => {
     const data = {
-      sometable: [{ firstCol: "first col value" }]
+      sometable: [
+        {
+          firstCol: "first col value",
+          numberCol: 21,
+          emptyCharCol: "",
+          null: null,
+          charColWithOneEmpty: "someChar",
+          charColWithOneNull: "someChar",
+          numberColWithOneNull: 21
+        },
+        {
+          firstCol: "first col value",
+          numberCol: 21,
+          emptyCharCol: "",
+          null: null,
+          charColWithOneEmpty: "",
+          charColWithOneNull: null,
+          numberColWithOneNull: null
+        }
+      ]
     };
 
-    const expectedData = [["first col value"]];
+    const expectedData = [
+      ["first col value", 21, "", null, "someChar", "someChar", 21],
+      ["first col value", 21, "", null, "", "", null]
+    ];
 
     makeRequest("common/sendArr", data).then((actualData: any) => {
       expect(JSON.stringify(actualData.sometable)).to.be.equal(
