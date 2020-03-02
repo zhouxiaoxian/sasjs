@@ -556,8 +556,10 @@ function convertToCSV(data: any) {
                 ? "chars"
                 : "number";
 
-            hasMixedTypes = currentFieldType !== firstFoundType;
-            rowNumError = hasMixedTypes ? index + 1 : -1;
+            if (!hasMixedTypes) {
+              hasMixedTypes = currentFieldType !== firstFoundType;
+              rowNumError = hasMixedTypes ? index + 1 : -1;
+            }
           } else {
             if (row[field] === "") {
               firstFoundType = "chars";
@@ -573,7 +575,7 @@ function convertToCSV(data: any) {
 
     if (hasMixedTypes) {
       console.error(
-        `Row number: ${rowNumError}: Column (${field}) has mixed types: ERROR`
+        `Row (${rowNumError}), Column (${field}) has mixed types: ERROR`
       );
     }
 
