@@ -26,6 +26,17 @@ context("Testing SAS", () => {
     );
   });
 
+  it("throws an error", done => {
+    const data: any = {
+      "1 invalid table": [{ col1: 42 }]
+    };
+    adapter.request("common/sendObj", data).then(null, (err: any) => {
+      console.log(err);
+      expect(err.MESSAGE).to.not.be.undefined;
+      done();
+    });
+  });
+
   it("ARR, single string value", done => {
     const data: any = { table1: [{ col1: "first col value" }] };
     adapter.request("common/sendArr", data).then((res: any) => {
