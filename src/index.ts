@@ -151,74 +151,6 @@ export default class SASjs {
     });
   }
 
-  private convertToCSV(data: any) {
-    const replacer = (key: any, value: any) => (value === null ? "" : value);
-    const headerFields = Object.keys(data[0]);
-    let csvTest;
-    const headers = headerFields.map(field => {
-      let firstFoundType: string | null = null;
-      let hasMixedTypes: boolean = false;
-      let rowNumError: number = -1;
-
-      const longestValueForField = data
-        .map((row: any, index: number) => {
-          if (row[field] || row[field] === "") {
-            if (firstFoundType) {
-              let currentFieldType =
-                row[field] === "" || typeof row[field] === "string"
-                  ? "chars"
-                  : "number";
-
-              hasMixedTypes = currentFieldType !== firstFoundType;
-              rowNumError = hasMixedTypes ? index + 1 : -1;
-            } else {
-              if (row[field] === "") {
-                firstFoundType = "chars";
-              } else {
-                firstFoundType =
-                  typeof row[field] === "string" ? "chars" : "number";
-              }
-            }
-            return row[field].length;
-          }
-        })
-        .sort((a: number, b: number) => b - a)[0];
-
-      if (hasMixedTypes) {
-        console.error(
-          `Row number: ${rowNumError}: Column (${field}) has mixed types: ERROR`
-        );
-      }
-
-      return `${field}:${firstFoundType === "chars" ? "$" : ""}${
-        longestValueForField
-          ? longestValueForField
-          : firstFoundType === "chars"
-          ? "1"
-          : "best"
-      }.`;
-    });
-
-    csvTest = data.map((row: any) => {
-      const fields = Object.keys(row).map((fieldName, index) => {
-        let value;
-        const currentCell = row[fieldName];
-
-        value = JSON.stringify(currentCell, replacer);
-        if (!value.includes(",")) {
-          value = value.replace(/"/g, "");
-        }
-
-        if (value === "" && headers[index].includes("best")) {
-          value = ".";
-        }
-
-        return value;
-      });
-      return fields.join(",");
-    });
-  }
-
   /**
    * Makes a request to the program specified.
    * @param programName - a string representing the SAS program name
@@ -611,26 +543,65 @@ function convertToCSV(data: any) {
   const headerFields = Object.keys(data[0]);
   let csvTest;
   const headers = headerFields.map(field => {
+    let firstFoundType: string | null = null;
+    let hasMixedTypes: boolean = false;
+    let rowNumError: number = -1;
+
     const longestValueForField = data
-      .map((row: any) => row[field].length)
+      .map((row: any, index: number) => {
+        if (row[field] || row[field] === "") {
+          if (firstFoundType) {
+            let currentFieldType =
+              row[field] === "" || typeof row[field] === "string"
+                ? "chars"
+                : "number";
+
+            hasMixedTypes = currentFieldType !== firstFoundType;
+            rowNumError = hasMixedTypes ? index + 1 : -1;
+          } else {
+            if (row[field] === "") {
+              firstFoundType = "chars";
+            } else {
+              firstFoundType =
+                typeof row[field] === "string" ? "chars" : "number";
+            }
+          }
+          return row[field].length;
+        }
+      })
       .sort((a: number, b: number) => b - a)[0];
-    return `${field}:$${longestValueForField ? longestValueForField : "best"}.`;
+
+    if (hasMixedTypes) {
+      console.error(
+        `Row number: ${rowNumError}: Column (${field}) has mixed types: ERROR`
+      );
+    }
+
+    return `${field}:${firstFoundType === "chars" ? "$" : ""}${
+      longestValueForField
+        ? longestValueForField
+        : firstFoundType === "chars"
+        ? "1"
+        : "best"
+    }.`;
   });
 
   csvTest = data.map((row: any) => {
-    const fields = Object.keys(row)
-      .sort()
-      .map(fieldName => {
-        let value;
-        const currentCell = row[fieldName];
+    const fields = Object.keys(row).map((fieldName, index) => {
+      let value;
+      const currentCell = row[fieldName];
 
-        value = JSON.stringify(currentCell, replacer);
-        if (!value.includes(",")) {
-          value = value.replace(/"/g, "");
-        }
+      value = JSON.stringify(currentCell, replacer);
+      if (!value.includes(",")) {
+        value = value.replace(/"/g, "");
+      }
 
-        return value;
-      });
+      if (value === "" && headers[index].includes("best")) {
+        value = ".";
+      }
+
+      return value;
+    });
     return fields.join(",");
   });
 
