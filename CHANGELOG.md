@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.7.1"></a>
+## [1.7.1](https://github.com/macropeople/sasjs/compare/v1.7.0...v1.7.1) (2020-03-02)
+
+
+### Bug Fixes
+
+* header data types, empty numerics ([c95c9fc](https://github.com/macropeople/sasjs/commit/c95c9fc))
+
+
+
 <a name="1.7.0"></a>
 # [1.7.0](https://github.com/macropeople/sasjs/compare/v1.6.5...v1.7.0) (2020-03-01)
 
