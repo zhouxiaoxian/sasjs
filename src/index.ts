@@ -70,6 +70,18 @@ export default class SASjs {
   }
 
   /**
+   * Sets the SASjs configuration.
+   * @param config - SASjsConfig indicating SASjs Configuration
+   */
+  public setSASjsConfig(config: SASjsConfig) {
+    this.sasjsConfig = {
+      ...this.sasjsConfig,
+      ...config
+    }
+    this.setupConfiguration();
+  }
+
+  /**
    * Sets the debug state.
    * @param value - Boolean indicating debug state
    */
