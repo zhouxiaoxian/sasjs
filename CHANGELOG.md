@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.8.0"></a>
+# [1.8.0](https://github.com/macropeople/sasjs/compare/v1.7.2...v1.8.0) (2020-03-03)
+
+
+### Bug Fixes
+
+* parsing error from response ([ff5fa1b](https://github.com/macropeople/sasjs/commit/ff5fa1b))
+
+
+### Features
+
+* update SASjs configuration after initializaton ([ee1255c](https://github.com/macropeople/sasjs/commit/ee1255c))
+
+
+
 <a name="1.7.2"></a>
 ## [1.7.2](https://github.com/macropeople/sasjs/compare/v1.7.1...v1.7.2) (2020-03-02)
 
