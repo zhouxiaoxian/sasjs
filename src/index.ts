@@ -640,9 +640,13 @@ function convertToCSV(data: any) {
       const currentCell = row[fieldName];
 
       value = JSON.stringify(currentCell, replacer);
-      if (!value.includes(",")) {
-        value = value.replace(/"/g, "");
+
+      if (!value.includes(",") && value.includes('"')) {
+        value = value.substring(1, value.length - 1);
       }
+
+      value = value.replace(/\\"/gm, '""');
+      value = value.replace(/\\r\\n/gm, "\\n");
 
       if (value === "" && headers[index].includes("best")) {
         value = ".";
@@ -654,11 +658,7 @@ function convertToCSV(data: any) {
   });
 
   let finalCSV =
-    headers.join(",").replace(/,/g, " ") + "\\rn" + csvTest.join("\\rn");
-  finalCSV = JSON.stringify(finalCSV)
-    .replace(/"/g, "")
-    .replace(/\\/g, '"')
-    .replace(/""rn/g, "\r\n");
+    headers.join(",").replace(/,/g, " ") + "\r\n" + csvTest.join("\r\n");
 
   return finalCSV;
 }
