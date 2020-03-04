@@ -77,7 +77,7 @@ export default class SASjs {
     this.sasjsConfig = {
       ...this.sasjsConfig,
       ...config
-    }
+    };
     this.setupConfiguration();
   }
 
@@ -614,7 +614,10 @@ function convertToCSV(data: any) {
                 typeof row[field] === "string" ? "chars" : "number";
             }
           }
-          return row[field].length;
+
+          return typeof row[field] === "string"
+            ? new Blob([row[field]]).size
+            : undefined;
         }
       })
       .sort((a: number, b: number) => b - a)[0];
@@ -637,15 +640,32 @@ function convertToCSV(data: any) {
   csvTest = data.map((row: any) => {
     const fields = Object.keys(row).map((fieldName, index) => {
       let value;
+      let containsSpecialChar = false;
       const currentCell = row[fieldName];
 
-      value = JSON.stringify(currentCell, replacer);
-
-      if (!value.includes(",") && value.includes('"')) {
-        value = value.substring(1, value.length - 1);
+      if (JSON.stringify(currentCell).search(/(\\t|\\n|\\r)/gm) > -1) {
+        value = currentCell.toString();
+        containsSpecialChar = true;
+      } else {
+        value = JSON.stringify(currentCell, replacer);
       }
 
-      value = value.replace(/\\"/gm, '""');
+      if (containsSpecialChar) {
+        if (value.includes(",") || value.includes('"')) {
+          value = '"' + value + '"';
+        }
+      } else {
+        if (
+          !value.includes(",") &&
+          value.includes('"') &&
+          !value.includes('\\"')
+        ) {
+          value = value.substring(1, value.length - 1);
+        }
+
+        value = value.replace(/\\"/gm, '""');
+      }
+
       value = value.replace(/\\r\\n/gm, "\\n");
 
       if (value === "" && headers[index].includes("best")) {
