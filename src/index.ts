@@ -615,9 +615,21 @@ function convertToCSV(data: any) {
             }
           }
 
-          return typeof row[field] === "string"
-            ? new Blob([row[field]]).size
-            : undefined;
+          let byteSize;
+
+          if (typeof row[field] === "string") {
+            let doubleQuotesFound = row[field]
+              .split("")
+              .filter((char: any) => char === '"');
+
+            byteSize = new Blob([row[field]]).size;
+
+            if (doubleQuotesFound.length > 0) {
+              byteSize += doubleQuotesFound.length;
+            }
+          }
+
+          return byteSize;
         }
       })
       .sort((a: number, b: number) => b - a)[0];
