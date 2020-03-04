@@ -370,11 +370,11 @@ context("Testing SAS", () => {
         testFinish();
 
         expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
-        expect(res.table1[0][0]).to.be.equal(data.table1[0].col1);
-        expect(res.table1[0][1]).to.be.equal(data.table1[0].col2);
-        expect(res.table1[0][2]).to.be.equal(data.table1[0].col3);
-        expect(res.table1[0][3]).to.be.equal(data.table1[0].col4);
-        expect(res.table1[0][4]).to.be.equal(data.table1[0].col5);
+        expect(res.table1[0][0]).to.be.equal("x");
+        expect(res.table1[0][1]).to.be.equal("one, two");
+        expect(res.table1[0][2]).to.be.equal('one, ""two""');
+        expect(res.table1[0][3]).to.be.equal('one, ""two""');
+        expect(res.table1[0][4]).to.be.equal(10);
         done();
       },
       err => {
@@ -402,11 +402,11 @@ context("Testing SAS", () => {
         testFinish();
 
         expect(res.table1[0].COL1, getTestExecTime()).to.not.be.undefined;
-        expect(res.table1[0].COL1).to.be.equal(data.table1[0].col1);
-        expect(res.table1[0].COL2).to.be.equal(data.table1[0].col2);
-        expect(res.table1[0].COL3).to.be.equal(data.table1[0].col3);
-        expect(res.table1[0].COL4).to.be.equal(data.table1[0].col4);
-        expect(res.table1[0].COL5).to.be.equal(data.table1[0].col5);
+        expect(res.table1[0].COL1).to.be.equal("x");
+        expect(res.table1[0].COL2).to.be.equal("one, two");
+        expect(res.table1[0].COL3).to.be.equal('one, ""two""');
+        expect(res.table1[0].COL4).to.be.equal('one, ""two""');
+        expect(res.table1[0].COL5).to.be.equal(10);
         done();
       },
       err => {
