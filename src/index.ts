@@ -281,10 +281,13 @@ export default class SASjs {
 
   private needsRetry(responseText: string): boolean {
     return (
-      (responseText.includes("_csrf") &&
-        responseText.includes("error") &&
-        responseText.includes("403")) ||
-      responseText.includes("449") ||
+      (responseText.includes('"errorCode":403') &&
+        responseText.includes("_csrf") &&
+        responseText.includes("X-CSRF-TOKEN")) ||
+      (responseText.includes('"status":449') &&
+        responseText.includes(
+          "Authentication success, retry original request"
+        )) ||
       responseText.includes("redirected response - retry request")
     );
   }

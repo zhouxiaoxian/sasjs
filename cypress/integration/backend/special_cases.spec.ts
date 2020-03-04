@@ -71,7 +71,7 @@ context("Testing SAS", () => {
         expect(res.table1[0].COL1).to.be.equal(data.table1[0].col1);
         expect(res.table1[0].COL2).to.be.equal(data.table1[0].col2);
         expect(res.table1[0].COL3).to.be.equal(data.table1[0].col3);
-        expect(res.table1[0].COL4).to.be.equal(data.table1[0].col3);
+        expect(res.table1[0].COL4).to.be.equal(data.table1[0].col4);
         done();
       },
       err => {
@@ -96,11 +96,10 @@ context("Testing SAS", () => {
         testFinish();
 
         expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
-        data.table1[0].map((col: any, index: number) => {
-          expect(res.table1[0]["COL" + index]).to.be.equal(
-            data.table1[0]["col" + index]
-          );
-        });
+
+        for (let i = 0; i <= 10; i++) {
+          expect(res.table1[0][i]).to.be.equal(data.table1[0]["col" + (i + 1)]);
+        }
         done();
       },
       err => {
@@ -125,11 +124,11 @@ context("Testing SAS", () => {
         testFinish();
 
         expect(res.table1[0].COL1, getTestExecTime()).to.not.be.undefined;
-        data.table1[0].map((col: any, index: number) => {
-          expect(res.table1[0]["COL" + index]).to.be.equal(
-            data.table1[0]["col" + index]
+        for (let i = 0; i <= 10; i++) {
+          expect(res.table1[0]["COL" + (i + 1)]).to.be.equal(
+            data.table1[0]["col" + (i + 1)]
           );
-        });
+        }
         done();
       },
       err => {
@@ -153,18 +152,21 @@ context("Testing SAS", () => {
         testFinish();
 
         expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
-        data.table1.map((row: any, index: number) => {
-          expect(res.table1[index][0]).to.be.equal(data.table1[index].col1);
-          expect(res.table1[index][1]).to.be.equal(data.table1[index].col2);
-          expect(res.table1[index][2]).to.be.equal(data.table1[index].col3);
-          expect(res.table1[index][3]).to.be.equal(data.table1[index].col4);
-        });
+        expect(res.table1[0][0]).to.be.equal(data.table1[0].col1);
+        expect(res.table1[0][1]).to.be.equal(data.table1[0].col2);
+        expect(res.table1[0][2]).to.be.equal(data.table1[0].col3);
+        expect(res.table1[0][3]).to.be.equal(data.table1[0].col4);
+        expect(res.table50[0][0]).to.be.equal(data.table50[0].col1);
+        expect(res.table50[0][1]).to.be.equal(data.table50[0].col2);
+        expect(res.table50[0][2]).to.be.equal(data.table50[0].col3);
+        expect(res.table50[0][3]).to.be.equal(data.table50[0].col4);
         done();
       },
       err => {
         console.log(err);
       }
     );
+    cy.wait(70000);
   });
 
   it("OBJ, many tables", done => {
@@ -182,12 +184,72 @@ context("Testing SAS", () => {
         testFinish();
 
         expect(res.table1[0].COL1, getTestExecTime()).to.not.be.undefined;
-        data.table1.map((row: any, index: number) => {
-          expect(res.table1[index].col1).to.be.equal(data.table1[index].col1);
-          expect(res.table1[index].col2).to.be.equal(data.table1[index].col2);
-          expect(res.table1[index].col3).to.be.equal(data.table1[index].col3);
-          expect(res.table1[index].col4).to.be.equal(data.table1[index].col4);
-        });
+        expect(res.table1[0].COL1).to.be.equal(data.table1[0].col1);
+        expect(res.table1[0].COL2).to.be.equal(data.table1[0].col2);
+        expect(res.table1[0].COL3).to.be.equal(data.table1[0].col3);
+        expect(res.table1[0].COL4).to.be.equal(data.table1[0].col4);
+        expect(res.table50[0].COL1).to.be.equal(data.table50[0].col1);
+        expect(res.table50[0].COL2).to.be.equal(data.table50[0].col2);
+        expect(res.table50[0].COL3).to.be.equal(data.table50[0].col3);
+        expect(res.table50[0].COL4).to.be.equal(data.table50[0].col4);
+        done();
+      },
+      err => {
+        console.error(err);
+      }
+    );
+
+    cy.wait(70000);
+  });
+
+  it("ARR, error and _csrf tables", done => {
+    testStart();
+
+    const data: any = {
+      error: [{ col1: "q", col2: "w", col3: "e", col4: "r" }],
+      _csrf: [{ col1: "q", col2: "w", col3: "e", col4: "r" }]
+    };
+    adapter.request("common/sendArr", data).then(
+      (res: any) => {
+        testFinish();
+
+        expect(res.error[0][0], getTestExecTime()).to.not.be.undefined;
+        expect(res.error[0][0]).to.be.equal(data.error[0].col1);
+        expect(res.error[0][1]).to.be.equal(data.error[0].col2);
+        expect(res.error[0][2]).to.be.equal(data.error[0].col3);
+        expect(res.error[0][3]).to.be.equal(data.error[0].col4);
+        expect(res._csrf[0][0]).to.be.equal(data._csrf[0].col1);
+        expect(res._csrf[0][1]).to.be.equal(data._csrf[0].col2);
+        expect(res._csrf[0][2]).to.be.equal(data._csrf[0].col3);
+        expect(res._csrf[0][3]).to.be.equal(data._csrf[0].col4);
+        done();
+      },
+      err => {
+        console.log(err);
+      }
+    );
+  });
+
+  it("OBJ, error and _csrf tables", done => {
+    testStart();
+
+    const data: any = {
+      error: [{ col1: "q", col2: "w", col3: "e", col4: "r" }],
+      _csrf: [{ col1: "q", col2: "w", col3: "e", col4: "r" }]
+    };
+    adapter.request("common/sendObj", data).then(
+      (res: any) => {
+        testFinish();
+
+        expect(res.error[0].COL1, getTestExecTime()).to.not.be.undefined;
+        expect(res.error[0].COL1).to.be.equal(data.error[0].col1);
+        expect(res.error[0].COL2).to.be.equal(data.error[0].col2);
+        expect(res.error[0].COL3).to.be.equal(data.error[0].col3);
+        expect(res.error[0].COL4).to.be.equal(data.error[0].col4);
+        expect(res._csrf[0].COL1).to.be.equal(data._csrf[0].col1);
+        expect(res._csrf[0].COL2).to.be.equal(data._csrf[0].col2);
+        expect(res._csrf[0].COL3).to.be.equal(data._csrf[0].col3);
+        expect(res._csrf[0].COL4).to.be.equal(data._csrf[0].col4);
         done();
       },
       err => {
