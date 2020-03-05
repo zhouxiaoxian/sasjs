@@ -257,6 +257,70 @@ context("Testing SAS", () => {
       }
     );
   });
+
+  it("ARR, cells with quotes", done => {
+    testStart();
+
+    const data: any = {
+      table1: [
+        {
+          col1: "x",
+          col2: "one, two",
+          col3: 'one "two" ',
+          col4: 'one, "two"',
+          col5: 10
+        }
+      ]
+    };
+    adapter.request("common/sendArr", data).then(
+      (res: any) => {
+        testFinish();
+
+        expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
+        expect(res.table1[0][0]).to.be.equal("x");
+        expect(res.table1[0][1]).to.be.equal("one, two");
+        expect(res.table1[0][2]).to.be.equal('one, ""two""');
+        expect(res.table1[0][3]).to.be.equal('one, ""two""');
+        expect(res.table1[0][4]).to.be.equal(10);
+        done();
+      },
+      err => {
+        console.log(err);
+      }
+    );
+  });
+
+  it("OBJ, cells with quotes", done => {
+    testStart();
+
+    const data: any = {
+      table1: [
+        {
+          col1: "x",
+          col2: "one, two",
+          col3: 'one "two"',
+          col4: 'one, "two"',
+          col5: 10
+        }
+      ]
+    };
+    adapter.request("common/sendObj", data).then(
+      (res: any) => {
+        testFinish();
+
+        expect(res.table1[0].COL1, getTestExecTime()).to.not.be.undefined;
+        expect(res.table1[0].COL1).to.be.equal("x");
+        expect(res.table1[0].COL2).to.be.equal("one, two");
+        expect(res.table1[0].COL3).to.be.equal('one, ""two""');
+        expect(res.table1[0].COL4).to.be.equal('one, ""two""');
+        expect(res.table1[0].COL5).to.be.equal(10);
+        done();
+      },
+      err => {
+        console.log(err);
+      }
+    );
+  });
 });
 
 const testStart = () => {
