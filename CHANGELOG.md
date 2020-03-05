@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+<a name="1.9.0"></a>
+# [1.9.0](https://github.com/macropeople/sasjs/compare/v1.8.0...v1.9.0) (2020-03-05)
+
+
+### Bug Fixes
+
+* special chars regex, csv function improvements ([5c8e3fe](https://github.com/macropeople/sasjs/commit/5c8e3fe))
+* splitting tests in different files ([95e1d8b](https://github.com/macropeople/sasjs/commit/95e1d8b))
+* switching crlfs to lfs in values ([277cf3f](https://github.com/macropeople/sasjs/commit/277cf3f))
+
+
+### Features
+
+* fixing tests to fit adapter behaviour ([6146189](https://github.com/macropeople/sasjs/commit/6146189))
+
+
+
 <a name="1.8.0"></a>
 # [1.8.0](https://github.com/macropeople/sasjs/compare/v1.7.2...v1.8.0) (2020-03-03)
 
