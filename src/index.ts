@@ -681,7 +681,7 @@ function convertToCSV(data: any) {
         value = value.replace(/\\"/gm, '""');
       }
 
-      value = value.replace(/\\r\\n/gm, "\\n");
+      value = value.replace(/\r\n/gm, "\n");
 
       if (value === "" && headers[index].includes("best")) {
         value = ".";
