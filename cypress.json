@@ -4,8 +4,8 @@
   "env": {
     "serverUrl": "",
     "port": null,
-    "appLoc": "",
-    "serverType": "",
+    "appLoc": "/Public/app",
+    "serverType": "SAS9",
     "debug": false,
     "username": "",
     "password": ""
