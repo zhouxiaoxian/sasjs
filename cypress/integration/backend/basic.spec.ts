@@ -113,6 +113,22 @@ context("Testing SAS", () => {
     });
   });
 
+  it("Bigger data", done => {
+    testStart();
+
+    let data={table1:[{ big :"data"}]};
+
+    for (var i = 1; i < 10000; i++) {
+      data.table1.push(data.table1[0]);
+    }
+
+    adapter.request("common/sendObj", data).then((res: any) => {
+      testFinish();
+      expect(res.table1[9000].BIG, getTestExecTime()).to.not.be.undefined
+      done();
+    });
+  });
+
   it("ARR, multiple columns", done => {
     testStart();
 
