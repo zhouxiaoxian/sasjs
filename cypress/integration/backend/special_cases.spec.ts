@@ -31,8 +31,9 @@ context("Testing SAS", () => {
     testStart();
 
     const data: any = {
-      table1: [{ col1: "\t", col2: "\n", col3: "\r", col4: "传/傳"
-        ,col5:'\r\n'}]
+      table1: [
+        { col1: "\t", col2: "\n", col3: "\r", col4: "传/傳", col5: "\r\n" }
+      ]
     };
     adapter.request("common/sendArr", data).then(
       (res: any) => {
@@ -110,6 +111,8 @@ context("Testing SAS", () => {
         console.log(err);
       }
     );
+
+    cy.wait(50000);
   });
 
   it("OBJ, wide table(many columns)", done => {
@@ -139,6 +142,8 @@ context("Testing SAS", () => {
         console.log(err);
       }
     );
+
+    cy.wait(50000);
   });
 
   it("ARR, many tables", done => {
@@ -173,7 +178,6 @@ context("Testing SAS", () => {
     cy.wait(70000);
   });
 
-
   it("ARR, error and _csrf tables", done => {
     testStart();
 
@@ -190,6 +194,7 @@ context("Testing SAS", () => {
         expect(res.error[0][1]).to.be.equal(data.error[0].col2);
         expect(res.error[0][2]).to.be.equal(data.error[0].col3);
         expect(res.error[0][3]).to.be.equal(data.error[0].col4);
+        expect(res._csrf[0][0], getTestExecTime()).to.not.be.undefined;
         expect(res._csrf[0][0]).to.be.equal(data._csrf[0].col1);
         expect(res._csrf[0][1]).to.be.equal(data._csrf[0].col2);
         expect(res._csrf[0][2]).to.be.equal(data._csrf[0].col3);
@@ -218,6 +223,7 @@ context("Testing SAS", () => {
         expect(res.error[0].COL2).to.be.equal(data.error[0].col2);
         expect(res.error[0].COL3).to.be.equal(data.error[0].col3);
         expect(res.error[0].COL4).to.be.equal(data.error[0].col4);
+        expect(res._csrf[0].COL1, getTestExecTime()).to.not.be.undefined;
         expect(res._csrf[0].COL1).to.be.equal(data._csrf[0].col1);
         expect(res._csrf[0].COL2).to.be.equal(data._csrf[0].col2);
         expect(res._csrf[0].COL3).to.be.equal(data._csrf[0].col3);
@@ -251,8 +257,8 @@ context("Testing SAS", () => {
         expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
         expect(res.table1[0][0]).to.be.equal("x");
         expect(res.table1[0][1]).to.be.equal("one, two");
-        expect(res.table1[0][2]).to.be.equal('one \"two\"');
-        expect(res.table1[0][3]).to.be.equal('one, \"two\"');
+        expect(res.table1[0][2]).to.be.equal('one "two"');
+        expect(res.table1[0][3]).to.be.equal('one, "two"');
         expect(res.table1[0][4]).to.be.equal(10);
         done();
       },
@@ -283,8 +289,8 @@ context("Testing SAS", () => {
         expect(res.table1[0].COL1, getTestExecTime()).to.not.be.undefined;
         expect(res.table1[0].COL1).to.be.equal("x");
         expect(res.table1[0].COL2).to.be.equal("one, two");
-        expect(res.table1[0].COL3).to.be.equal('one \"two\"');
-        expect(res.table1[0].COL4).to.be.equal('one, \"two\"');
+        expect(res.table1[0].COL3).to.be.equal('one "two"');
+        expect(res.table1[0].COL4).to.be.equal('one, "two"');
         expect(res.table1[0].COL5).to.be.equal(10);
         done();
       },

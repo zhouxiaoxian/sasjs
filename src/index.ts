@@ -206,7 +206,16 @@ export default class SASjs {
           tableCounter++;
           sasjsTables.push(tableName);
           const csv = convertToCSV(data[tableName]);
-          requestParams[`sasjs${tableCounter}data`] = csv;
+          // if csv is more then 65k bytes, send in chunks
+          if (getByteSize(csv) > 65000) {
+            let csvChunks = splitChunks(csv);
+            // append chunks to form data with same key
+            csvChunks.map(chunk => {
+              formData.append(`sasjs${tableCounter}data`, chunk);
+            });
+          } else {
+            requestParams[`sasjs${tableCounter}data`] = csv;
+          }
         }
         requestParams["sasjs_tables"] = sasjsTables.join(" ");
       }
@@ -571,6 +580,30 @@ const compareTimestamps = (a: SASjsRequest, b: SASjsRequest) => {
   return b.timestamp.getTime() - a.timestamp.getTime();
 };
 
+function splitChunks(string: string) {
+  let size = 16000;
+
+  var numChunks = Math.ceil(string.length / size),
+    chunks = new Array(numChunks);
+
+  for (var i = 0, o = 0; i < numChunks; ++i, o += size) {
+    chunks[i] = string.substr(o, size);
+  }
+
+  return chunks;
+}
+
+function getByteSize(str: string) {
+  var s = str.length;
+  for (var i = str.length - 1; i >= 0; i--) {
+    var code = str.charCodeAt(i);
+    if (code > 0x7f && code <= 0x7ff) s++;
+    else if (code > 0x7ff && code <= 0xffff) s += 2;
+    if (code >= 0xdc00 && code <= 0xdfff) i--; //trail surrogate
+  }
+  return s;
+}
+
 function serialize(obj: any) {
   const str: any[] = [];
   for (const p in obj) {
@@ -625,7 +658,7 @@ function convertToCSV(data: any) {
               .split("")
               .filter((char: any) => char === '"');
 
-            byteSize = new Blob([row[field]]).size;
+            byteSize = getByteSize(row[field]);
 
             if (doubleQuotesFound.length > 0) {
               byteSize += doubleQuotesFound.length;
