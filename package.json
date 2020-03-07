@@ -9,7 +9,8 @@
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
-    "cypress": "./node_modules/.bin/cypress open"
+    "cypress": "./node_modules/.bin/cypress open",
+    "semantic-release": "semantic-release"
   },
   "keywords": [
     "sas",
@@ -21,9 +22,6 @@
     "url": "https://github.com/macropeople/sasjs"
   },
   "license": "ISC",
-  "dependencies": {
-    "standard-version": "^7.1.0"
-  },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^4.1.2",
     "@types/jest": "^25.1.2",
@@ -39,6 +37,7 @@
     "typescript": "^3.7.5",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11"
+    "webpack-cli": "^3.3.11",
+    "semantic-release": "^17.0.4"
   }
 }
