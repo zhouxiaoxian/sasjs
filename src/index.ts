@@ -206,8 +206,8 @@ export default class SASjs {
           tableCounter++;
           sasjsTables.push(tableName);
           const csv = convertToCSV(data[tableName]);
-          // if csv is more then 65k bytes, send in chunks
-          if (getByteSize(csv) > 65000) {
+          // if csv has length more then 16k, send in chunks
+          if (csv.length > 16000) {
             let csvChunks = splitChunks(csv);
             // append chunks to form data with same key
             csvChunks.map(chunk => {

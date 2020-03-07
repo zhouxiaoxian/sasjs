@@ -89,7 +89,7 @@ context("Testing SAS", () => {
     testStart();
 
     let cols: any = {};
-    for (var i = 1; i <= 10000; i++) {
+    for (var i = 1; i <= 85000; i++) {
       cols["col" + i] = "test" + i;
     }
 
@@ -119,7 +119,7 @@ context("Testing SAS", () => {
     testStart();
 
     let cols: any = {};
-    for (var i = 1; i <= 10000; i++) {
+    for (var i = 1; i <= 85000; i++) {
       cols["col" + i] = "test" + i;
     }
 
