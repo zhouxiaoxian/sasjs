@@ -323,9 +323,9 @@ export default class SASjs {
     if (this.sasjsConfig.debug) {
       requestParams["_omittextlog"] = "false";
       requestParams["_omitsessionresults"] = "false";
-      if (this.sasjsConfig.serverType === "SAS9") {
+
         requestParams["_debug"] = 131;
-      }
+
     }
 
     return requestParams;

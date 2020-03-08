@@ -51,7 +51,7 @@ parmcards4;
 %* Step 1 - load macros and obtain refresh token (must be ADMIN);
 filename mc url "https://raw.githubusercontent.com/macropeople/macrocore/master/mc_all.sas";
 %inc mc;
-%let client=new%sysfunc(ranuni(0));
+%let client=new%sysfunc(ranuni(0),hex16.);
 %let secret=MySecret;
 %mv_getapptoken(client_id=&client,client_secret=&secret)
 

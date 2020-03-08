@@ -170,9 +170,9 @@ context("Testing SAS", () => {
 
     const data: any = {
       table1: [
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
         { col1: 42, col2: 1.62, col3: "x", col4: "x" },
         { col1: 42, col2: 1.62, col3: "x", col4: "x" }
       ]
@@ -196,9 +196,9 @@ context("Testing SAS", () => {
 
     const data: any = {
       table1: [
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
         { col1: 42, col2: 1.62, col3: "x", col4: "x" },
         { col1: 42, col2: 1.62, col3: "x", col4: "x" }
       ]
@@ -222,11 +222,11 @@ context("Testing SAS", () => {
 
     const data: any = {
       table1: [
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " }
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" }
       ]
     };
     adapter.request("common/sendArr", data).then((res: any) => {
@@ -248,11 +248,11 @@ context("Testing SAS", () => {
 
     const data: any = {
       table1: [
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " }
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" }
       ]
     };
     adapter.request("common/sendObj", data).then((res: any) => {
@@ -277,8 +277,8 @@ context("Testing SAS", () => {
         { col1: 42, col2: null, col3: "x", col4: null },
         { col1: 42, col2: null, col3: "x", col4: null },
         { col1: 42, col2: null, col3: "x", col4: null },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " }
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" }
       ]
     };
     adapter.request("common/sendArr", data).then((res: any) => {
@@ -289,7 +289,7 @@ context("Testing SAS", () => {
         expect(res.table1[index][0]).to.be.equal(data.table1[index].col1);
         expect(res.table1[index][1]).to.be.equal(data.table1[index].col2);
         expect(res.table1[index][2]).to.be.equal(data.table1[index].col3);
-        expect(res.table1[index][3]).to.be.equal(" ");
+        expect(res.table1[index][3]).to.be.equal("");
       });
       done();
     });
@@ -303,8 +303,8 @@ context("Testing SAS", () => {
         { col1: 42, col2: null, col3: "x", col4: null },
         { col1: 42, col2: null, col3: "x", col4: null },
         { col1: 42, col2: null, col3: "x", col4: null },
-        { col1: 42, col2: null, col3: "x", col4: " " },
-        { col1: 42, col2: null, col3: "x", col4: " " }
+        { col1: 42, col2: null, col3: "x", col4: "" },
+        { col1: 42, col2: null, col3: "x", col4: "" }
       ]
     };
     adapter.request("common/sendObj", data).then((res: any) => {
@@ -315,7 +315,7 @@ context("Testing SAS", () => {
         expect(res.table1[index].COL1).to.be.equal(data.table1[index].col1);
         expect(res.table1[index].COL2).to.be.equal(data.table1[index].col2);
         expect(res.table1[index].COL3).to.be.equal(data.table1[index].col3);
-        expect(res.table1[index].COL4).to.be.equal(" ");
+        expect(res.table1[index].COL4).to.be.equal("");
       });
       done();
     });

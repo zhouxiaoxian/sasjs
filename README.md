@@ -1,9 +1,9 @@
 # SASjs
 
-SASjs is a open-source framework for building Web Apps on SAS® platforms. You can use as much or as little of it as you like.  This repository contains the JS adapter, that handles the to/from SAS communication on the client side.  To use this library, either `npm install sasjs` or stick it in a script tag like so:
+SASjs is a open-source framework for building Web Apps on SAS® platforms. You can use as much or as little of it as you like.  This repository contains the JS adapter, that handles the to/from SAS communication on the client side.  To use this library, either `npm install sasjs` or stick it in a script tag like so (be sure to switch `@latest` for a specific version when deploying):
 
 ```
-<script src="https://cdn.jsdelivr.net/npm/sasjs@1.6.0/index.js"
+<script src="https://cdn.jsdelivr.net/npm/sasjs@latest/index.js"
 integrity="sha384-ppDMKTgsjRnY/9ORpxSHFFFo/0yv70I/IYjyWClq1dXOxYkFWaw+lCWU6BSjMKMP"
 crossorigin="anonymous"></script>
 ```

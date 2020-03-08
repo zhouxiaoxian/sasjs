@@ -27,24 +27,30 @@ context("Testing SAS", () => {
     );
   });
 
-  it("ARR, special chars(tab, CRLF, CR, UTF8)", done => {
+  it("01 special chars(tab, CRLF, CR)", done => {
     testStart();
 
     const data: any = {
-      table1: [
-        { col1: "\t", col2: "\n", col3: "\r", col4: "传/傳", col5: "\r\n" }
-      ]
+
+      table1: [{ tab: '\t', lf: "\n", cr: "\r"
+        ,semicolon:';semi'
+        ,crlf:'\r\n'
+        ,euro:"€euro"
+        ,banghash:'!#banghash'
+      }]
     };
     adapter.request("common/sendArr", data).then(
       (res: any) => {
         testFinish();
 
         expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
-        expect(res.table1[0][0]).to.be.equal(data.table1[0].col1);
-        expect(res.table1[0][1]).to.be.equal(data.table1[0].col2);
-        expect(res.table1[0][2]).to.be.equal(data.table1[0].col3);
-        expect(res.table1[0][3]).to.be.equal(data.table1[0].col4);
+        expect(res.table1[0][0]).to.be.equal(data.table1[0].tab);
+        expect(res.table1[0][1]).to.be.equal(data.table1[0].lf);
+        expect(res.table1[0][2]).to.be.equal(data.table1[0].cr);
+        expect(res.table1[0][3]).to.be.equal(data.table1[0].semicolon);
         expect(res.table1[0][4]).to.be.equal("\n");
+        expect(res.table1[0][5]).to.be.equal(data.table1[0].euro);
+        expect(res.table1[0][6]).to.be.equal(data.table1[0].banghash);
         done();
       },
       err => {
@@ -53,30 +59,36 @@ context("Testing SAS", () => {
     );
   });
 
-  it("OBJ, special chars(tab, CRLF, CR, UTF8)", done => {
+
+  it("02 special chars", done => {
     testStart();
 
     const data: any = {
-      table1: [
-        {
-          col1: "\txxxxxxxxxxxxxx",
-          col2: "\nxxxxxxxxxxxxxxxx",
-          col3: "\rxxxxxxxxxxxxxx",
-          col4: "传/傳xxxxxxxxxxx",
-          col5: "\r\nxxxxxxxxxxx"
-        }
-      ]
+      table1: [{ speech0:'"speech'
+        ,pct:'%percent'
+        ,speech:"\"speech"
+        ,slash:"\\slash"
+        ,macvar:'&sysuserid'
+        ,chinese: "传/傳chinese"
+        ,sigma:"Σsigma"
+        ,at:"@at"
+        ,serbian:"Српски"
+        ,dollar:"$"
+      }]
     };
-    adapter.request("common/sendObj", data).then(
+    adapter.request("common/sendArr", data).then(
       (res: any) => {
         testFinish();
-
-        expect(res.table1[0].COL1, getTestExecTime()).to.not.be.undefined;
-        expect(res.table1[0].COL1).to.be.equal(data.table1[0].col1);
-        expect(res.table1[0].COL2).to.be.equal(data.table1[0].col2);
-        expect(res.table1[0].COL3).to.be.equal(data.table1[0].col3);
-        expect(res.table1[0].COL4).to.be.equal(data.table1[0].col4);
-        expect(res.table1[0].COL5).to.be.equal("\nxxxxxxxxxxx");
+        expect(res.table1[0][0]).to.be.equal(data.table1[0].speech0);
+        expect(res.table1[0][1]).to.be.equal(data.table1[0].pct);
+        expect(res.table1[0][2]).to.be.equal(data.table1[0].speech);
+        expect(res.table1[0][3]).to.be.equal(data.table1[0].slash);
+        expect(res.table1[0][4]).to.be.equal(data.table1[0].macvar);
+        expect(res.table1[0][5]).to.be.equal(data.table1[0].chinese);
+        expect(res.table1[0][6]).to.be.equal(data.table1[0].sigma);
+        expect(res.table1[0][6]).to.be.equal(data.table1[0].at);
+        expect(res.table1[0][8]).to.be.equal(data.table1[0].serbian);
+        expect(res.table1[0][9]).to.be.equal(data.table1[0].dollar);
         done();
       },
       err => {
