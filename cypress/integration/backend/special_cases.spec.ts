@@ -89,7 +89,7 @@ context("Testing SAS", () => {
     testStart();
 
     let cols: any = {};
-    for (var i = 1; i <= 85000; i++) {
+    for (var i = 1; i <= 10000; i++) {
       cols["col" + i] = "test" + i;
     }
 
@@ -119,7 +119,7 @@ context("Testing SAS", () => {
     testStart();
 
     let cols: any = {};
-    for (var i = 1; i <= 85000; i++) {
+    for (var i = 1; i <= 10000; i++) {
       cols["col" + i] = "test" + i;
     }
 
@@ -176,6 +176,38 @@ context("Testing SAS", () => {
       }
     );
     cy.wait(70000);
+  });
+
+  it("ARR, big data 5MB", done => {
+    testStart();
+
+    let rows: any = [];
+    let colData: string =
+      "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+    for (var i = 1; i <= 10000; i++) {
+      rows.push({ col1: colData, col2: colData, col3: colData, col4: colData });
+    }
+
+    const data: any = {
+      table1: rows
+    };
+    adapter.request("common/sendArr", data).then(
+      (res: any) => {
+        testFinish();
+
+        expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
+
+        for (let i = 0; i <= 10; i++) {
+          expect(res.table1[i][0]).to.be.equal(data.table1[i][0]);
+        }
+        done();
+      },
+      err => {
+        console.log(err);
+      }
+    );
+
+    cy.wait(50000);
   });
 
   it("ARR, error and _csrf tables", done => {
