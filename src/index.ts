@@ -264,8 +264,6 @@ export default class SASjs {
             }
           } else {
             this.retryCount = 0;
-            this.parseLogFromResponse(responseText, program);
-            this.updateUsername(responseText);
 
             if (self.isLogInRequired(responseText)) {
               reject(new Error("login required"));
@@ -274,6 +272,8 @@ export default class SASjs {
                 this.sasjsConfig.serverType === "SAS9" &&
                 this.sasjsConfig.debug
               ) {
+                this.parseLogFromResponse(responseText, program);
+                this.updateUsername(responseText);
                 const jsonResponseText = this.parseSAS9Response(responseText);
 
                 if (jsonResponseText !== "") {
@@ -283,7 +283,31 @@ export default class SASjs {
                     MESSAGE: this.parseSAS9ErrorResponse(responseText)
                   });
                 }
+              } else if (
+                this.sasjsConfig.serverType === "SASVIYA" &&
+                this.sasjsConfig.debug
+              ) {
+                try {
+                  const json_url = responseText
+                    .split('<iframe style=\"width: 99%; height: 500px\" src=\"')[1]
+                    .split('\"></iframe>')[0]
+                  fetch(this.serverUrl + json_url)
+                    .then(res => res.text())
+                    .then(resText => {
+                      this.parseLogFromResponse(resText, program);
+                      this.updateUsername(resText);
+                      try {
+                        resolve(JSON.parse(resText));
+                      } catch (e) {
+                        reject({ MESSAGE: resText });
+                      }
+                    })
+                } catch (e) {
+                  reject({ MESSAGE: responseText });
+                }
               } else {
+                this.parseLogFromResponse(responseText, program);
+                this.updateUsername(responseText);
                 try {
                   let parsedJson = JSON.parse(responseText);
                   resolve(parsedJson);
