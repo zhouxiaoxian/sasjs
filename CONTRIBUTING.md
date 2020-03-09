@@ -14,36 +14,27 @@ Tests are run using cypress.  Before running tests, you need to define the follo
 
 # SAS 9
 ```
-%* compile macros ;
+
 filename mc url "https://raw.githubusercontent.com/macropeople/macrocore/master/mc_all.sas?_=1";
 %inc mc;
-%* parmcards lets us write to a text file from open code ;
 filename ft15f001 temp;
 parmcards4;
 %webout(OPEN)
 %macro x();
-%do i=1 %to &_webin_file_count;
-   %webout(OBJ,&&_webin_name&i)
-%end;
-%mend;
-%x()
-
-    %webout(CLOSE)
+%do i=1 %to &_webin_file_count; %webout(OBJ,&&_webin_name&i) %end;
+%mend; %x()
+%webout(CLOSE)
 ;;;;
 %mm_createwebservice(path=/Public/app/common,name=sendObj,code=ft15f001,replace=YES)
-
-filename ft15f001 temp;
 parmcards4;
 %webout(OPEN)
 %macro x();
-%do i=1 %to &_webin_file_count;
-   %webout(ARR,&&_webin_name&i)
-%end;
-%mend;
-%x()
+%do i=1 %to &_webin_file_count; %webout(ARR,&&_webin_name&i) %end;
+%mend; %x()
 %webout(CLOSE)
 ;;;;
 %mm_createwebservice(path=/Public/app/common,name=sendArr,code=ft15f001,replace=YES)
+
 ```
 
 # Viya
