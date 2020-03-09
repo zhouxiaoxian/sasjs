@@ -185,6 +185,9 @@ export default class SASjs {
 
     const formData = new FormData();
 
+    let isError = false;
+    let errorMsg = "";
+
     if (data) {
       if (this.sasjsConfig.serverType === "SAS9") {
         // file upload approach
@@ -203,14 +206,31 @@ export default class SASjs {
         const sasjsTables = [];
         let tableCounter = 0;
         for (const tableName in data) {
+          if (isError) {
+            return;
+          }
           tableCounter++;
           sasjsTables.push(tableName);
           const csv = convertToCSV(data[tableName]);
-          requestParams[`sasjs${tableCounter}data`] = csv;
+          if (csv === "ERROR: LARGE STRING LENGTH"){
+            isError = true;
+            errorMsg = "The max length of a string value in SASjs is 32765 characters.";
+          }
+          // if csv has length more then 16k, send in chunks
+          if (csv.length > 16000) {
+            let csvChunks = splitChunks(csv);
+            // append chunks to form data with same key
+            csvChunks.map(chunk => {
+              formData.append(`sasjs${tableCounter}data`, chunk);
+            });
+          } else {
+            requestParams[`sasjs${tableCounter}data`] = csv;
+          }
         }
         requestParams["sasjs_tables"] = sasjsTables.join(" ");
       }
     }
+    
     for (const key in requestParams) {
       if (requestParams.hasOwnProperty(key)) {
         formData.append(key, requestParams[key]);
@@ -218,6 +238,9 @@ export default class SASjs {
     }
 
     return new Promise((resolve, reject) => {
+      if (isError){
+        reject({MESSAGE: errorMsg});
+      }
       fetch(apiUrl, {
         method: "POST",
         body: formData,
@@ -256,7 +279,6 @@ export default class SASjs {
           } else {
             this.retryCount = 0;
             this.parseLogFromResponse(responseText, program);
-            this.updateUsername(responseText);
 
             if (self.isLogInRequired(responseText)) {
               reject(new Error("login required"));
@@ -265,6 +287,7 @@ export default class SASjs {
                 this.sasjsConfig.serverType === "SAS9" &&
                 this.sasjsConfig.debug
               ) {
+                this.updateUsername(responseText);
                 const jsonResponseText = this.parseSAS9Response(responseText);
 
                 if (jsonResponseText !== "") {
@@ -274,7 +297,29 @@ export default class SASjs {
                     MESSAGE: this.parseSAS9ErrorResponse(responseText)
                   });
                 }
+              } else if (
+                this.sasjsConfig.serverType === "SASVIYA" &&
+                this.sasjsConfig.debug
+              ) {
+                try {
+                  const json_url = responseText
+                    .split('<iframe style=\"width: 99%; height: 500px\" src=\"')[1]
+                    .split('\"></iframe>')[0]
+                  fetch(this.serverUrl + json_url)
+                    .then(res => res.text())
+                    .then(resText => {
+                      this.updateUsername(resText);
+                      try {
+                        resolve(JSON.parse(resText));
+                      } catch (e) {
+                        reject({ MESSAGE: resText });
+                      }
+                    })
+                } catch (e) {
+                  reject({ MESSAGE: responseText });
+                }
               } else {
+                this.updateUsername(responseText);
                 try {
                   let parsedJson = JSON.parse(responseText);
                   resolve(parsedJson);
@@ -314,9 +359,9 @@ export default class SASjs {
     if (this.sasjsConfig.debug) {
       requestParams["_omittextlog"] = "false";
       requestParams["_omitsessionresults"] = "false";
-      if (this.sasjsConfig.serverType === "SAS9") {
+
         requestParams["_debug"] = 131;
-      }
+
     }
 
     return requestParams;
@@ -374,58 +419,7 @@ export default class SASjs {
       if (!this.sasjsConfig.debug) {
         this.appendSasjsRequest(null, program, null);
       } else {
-        let jsonResponse;
-
-        try {
-          jsonResponse = JSON.parse(response);
-        } catch (e) {
-          console.error("Error parsing json:", e);
-        }
-
-        if (jsonResponse) {
-          const jobUrl = jsonResponse["SYS_JES_JOB_URI"];
-          if (jobUrl) {
-            fetch(this.serverUrl + jobUrl, {
-              method: "GET",
-              referrerPolicy: "same-origin"
-            })
-              .then((res: any) => res.text())
-              .then((res: any) => {
-                let responseJson;
-                let logUri = "";
-                let pgmData = "";
-
-                try {
-                  responseJson = JSON.parse(res);
-                } catch (e) {
-                  console.error("Error parsing json:", e);
-                }
-
-                if (responseJson) {
-                  pgmData = responseJson.jobRequest.jobDefinition.code;
-                  logUri = responseJson.links.find(
-                    (link: { rel: string }) => link.rel === "log"
-                  ).uri;
-                  logUri += "/content";
-
-                  logUri = this.serverUrl + logUri;
-
-                  if (logUri) {
-                    this.fetchLogFileContent(logUri)
-                      .then((logContent: any) => {
-                        this.appendSasjsRequest(logContent, program, pgmData);
-                      })
-                      .catch((err: Error) => {
-                        console.error("error getting log content:", err);
-                      });
-                  }
-                }
-              })
-              .catch((err: Error) => {
-                console.error("Error fetching VIYA job", err);
-              });
-          }
-        }
+        this.appendSasjsRequest(response, program, null);
       }
     }
   }
@@ -446,12 +440,7 @@ export default class SASjs {
     let generatedCode = "";
 
     if (log) {
-      if (this.sasjsConfig.serverType === "SAS9") {
-        sourceCode = this.parseSAS9SourceCode(log);
-      } else {
-        const pgmLines = pgmData.split("\r");
-        sourceCode = pgmLines.join("\r\n");
-      }
+      sourceCode = this.parseSourceCode(log);
       generatedCode = this.parseGeneratedCode(log);
     }
 
@@ -468,7 +457,7 @@ export default class SASjs {
     }
   }
 
-  private parseSAS9SourceCode(log: string) {
+  private parseSourceCode(log: string) {
     const isSourceCodeLine = (line: string) =>
       line
         .trim()
@@ -480,10 +469,7 @@ export default class SASjs {
   }
 
   private parseGeneratedCode(log: string) {
-    let startsWith = "normal:";
-    if (this.sasjsConfig.serverType === "SAS9") {
-      startsWith = "MPRINT";
-    }
+    let startsWith = "MPRINT";
     const isGeneratedCodeLine = (line: string) =>
       line.trim().startsWith(startsWith);
     const logLines = log.split("\n").filter(isGeneratedCodeLine);
@@ -571,6 +557,30 @@ const compareTimestamps = (a: SASjsRequest, b: SASjsRequest) => {
   return b.timestamp.getTime() - a.timestamp.getTime();
 };
 
+function splitChunks(string: string) {
+  let size = 16000;
+
+  var numChunks = Math.ceil(string.length / size),
+    chunks = new Array(numChunks);
+
+  for (var i = 0, o = 0; i < numChunks; ++i, o += size) {
+    chunks[i] = string.substr(o, size);
+  }
+
+  return chunks;
+}
+
+function getByteSize(str: string) {
+  var s = str.length;
+  for (var i = str.length - 1; i >= 0; i--) {
+    var code = str.charCodeAt(i);
+    if (code > 0x7f && code <= 0x7ff) s++;
+    else if (code > 0x7ff && code <= 0xffff) s += 2;
+    if (code >= 0xdc00 && code <= 0xdfff) i--; //trail surrogate
+  }
+  return s;
+}
+
 function serialize(obj: any) {
   const str: any[] = [];
   for (const p in obj) {
@@ -591,6 +601,7 @@ function convertToCSV(data: any) {
   const replacer = (key: any, value: any) => (value === null ? "" : value);
   const headerFields = Object.keys(data[0]);
   let csvTest;
+  let invalidString = false;
   const headers = headerFields.map(field => {
     let firstFoundType: string | null = null;
     let hasMixedTypes: boolean = false;
@@ -625,7 +636,7 @@ function convertToCSV(data: any) {
               .split("")
               .filter((char: any) => char === '"');
 
-            byteSize = new Blob([row[field]]).size;
+            byteSize = getByteSize(row[field]);
 
             if (doubleQuotesFound.length > 0) {
               byteSize += doubleQuotesFound.length;
@@ -636,7 +647,9 @@ function convertToCSV(data: any) {
         }
       })
       .sort((a: number, b: number) => b - a)[0];
-
+    if (longestValueForField && longestValueForField > 32765){
+      invalidString = true;
+    }
     if (hasMixedTypes) {
       console.error(
         `Row (${rowNumError}), Column (${field}) has mixed types: ERROR`
@@ -652,6 +665,9 @@ function convertToCSV(data: any) {
     }.`;
   });
 
+  if (invalidString){
+    return "ERROR: LARGE STRING LENGTH";
+  }
   csvTest = data.map((row: any) => {
     const fields = Object.keys(row).map((fieldName, index) => {
       let value;
