@@ -115,7 +115,6 @@ context("Testing SAS", () => {
 
   it("OBJ, long string greater than (32765) throws error", done => {
     testStart();
-
     let x = "X";
     for (var i = 1; i < 32766; i++) {
       x = x + "X";
