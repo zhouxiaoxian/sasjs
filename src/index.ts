@@ -265,7 +265,6 @@ export default class SASjs {
           } else {
             this.retryCount = 0;
             this.parseLogFromResponse(responseText, program);
-            this.updateUsername(responseText);
 
             if (self.isLogInRequired(responseText)) {
               reject(new Error("login required"));
@@ -274,6 +273,7 @@ export default class SASjs {
                 this.sasjsConfig.serverType === "SAS9" &&
                 this.sasjsConfig.debug
               ) {
+                this.updateUsername(responseText);
                 const jsonResponseText = this.parseSAS9Response(responseText);
 
                 if (jsonResponseText !== "") {
@@ -283,7 +283,29 @@ export default class SASjs {
                     MESSAGE: this.parseSAS9ErrorResponse(responseText)
                   });
                 }
+              } else if (
+                this.sasjsConfig.serverType === "SASVIYA" &&
+                this.sasjsConfig.debug
+              ) {
+                try {
+                  const json_url = responseText
+                    .split('<iframe style=\"width: 99%; height: 500px\" src=\"')[1]
+                    .split('\"></iframe>')[0]
+                  fetch(this.serverUrl + json_url)
+                    .then(res => res.text())
+                    .then(resText => {
+                      this.updateUsername(resText);
+                      try {
+                        resolve(JSON.parse(resText));
+                      } catch (e) {
+                        reject({ MESSAGE: resText });
+                      }
+                    })
+                } catch (e) {
+                  reject({ MESSAGE: responseText });
+                }
               } else {
+                this.updateUsername(responseText);
                 try {
                   let parsedJson = JSON.parse(responseText);
                   resolve(parsedJson);
@@ -383,58 +405,7 @@ export default class SASjs {
       if (!this.sasjsConfig.debug) {
         this.appendSasjsRequest(null, program, null);
       } else {
-        let jsonResponse;
-
-        try {
-          jsonResponse = JSON.parse(response);
-        } catch (e) {
-          console.error("Error parsing json:", e);
-        }
-
-        if (jsonResponse) {
-          const jobUrl = jsonResponse["SYS_JES_JOB_URI"];
-          if (jobUrl) {
-            fetch(this.serverUrl + jobUrl, {
-              method: "GET",
-              referrerPolicy: "same-origin"
-            })
-              .then((res: any) => res.text())
-              .then((res: any) => {
-                let responseJson;
-                let logUri = "";
-                let pgmData = "";
-
-                try {
-                  responseJson = JSON.parse(res);
-                } catch (e) {
-                  console.error("Error parsing json:", e);
-                }
-
-                if (responseJson) {
-                  pgmData = responseJson.jobRequest.jobDefinition.code;
-                  logUri = responseJson.links.find(
-                    (link: { rel: string }) => link.rel === "log"
-                  ).uri;
-                  logUri += "/content";
-
-                  logUri = this.serverUrl + logUri;
-
-                  if (logUri) {
-                    this.fetchLogFileContent(logUri)
-                      .then((logContent: any) => {
-                        this.appendSasjsRequest(logContent, program, pgmData);
-                      })
-                      .catch((err: Error) => {
-                        console.error("error getting log content:", err);
-                      });
-                  }
-                }
-              })
-              .catch((err: Error) => {
-                console.error("Error fetching VIYA job", err);
-              });
-          }
-        }
+        this.appendSasjsRequest(response, program, null);
       }
     }
   }
@@ -455,12 +426,7 @@ export default class SASjs {
     let generatedCode = "";
 
     if (log) {
-      if (this.sasjsConfig.serverType === "SAS9") {
-        sourceCode = this.parseSAS9SourceCode(log);
-      } else {
-        const pgmLines = pgmData.split("\r");
-        sourceCode = pgmLines.join("\r\n");
-      }
+      sourceCode = this.parseSourceCode(log);
       generatedCode = this.parseGeneratedCode(log);
     }
 
@@ -477,7 +443,7 @@ export default class SASjs {
     }
   }
 
-  private parseSAS9SourceCode(log: string) {
+  private parseSourceCode(log: string) {
     const isSourceCodeLine = (line: string) =>
       line
         .trim()
@@ -489,10 +455,7 @@ export default class SASjs {
   }
 
   private parseGeneratedCode(log: string) {
-    let startsWith = "normal:";
-    if (this.sasjsConfig.serverType === "SAS9") {
-      startsWith = "MPRINT";
-    }
+    let startsWith = "MPRINT";
     const isGeneratedCodeLine = (line: string) =>
       line.trim().startsWith(startsWith);
     const logLines = log.split("\n").filter(isGeneratedCodeLine);
