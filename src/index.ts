@@ -426,12 +426,7 @@ export default class SASjs {
     let generatedCode = "";
 
     if (log) {
-      if (this.sasjsConfig.serverType === "SAS9") {
-        sourceCode = this.parseSAS9SourceCode(log);
-      } else {
-        const pgmLines = pgmData.split("\r");
-        sourceCode = pgmLines.join("\r\n");
-      }
+      sourceCode = this.parseSourceCode(log);
       generatedCode = this.parseGeneratedCode(log);
     }
 
@@ -448,7 +443,7 @@ export default class SASjs {
     }
   }
 
-  private parseSAS9SourceCode(log: string) {
+  private parseSourceCode(log: string) {
     const isSourceCodeLine = (line: string) =>
       line
         .trim()
@@ -460,10 +455,7 @@ export default class SASjs {
   }
 
   private parseGeneratedCode(log: string) {
-    let startsWith = "normal:";
-    if (this.sasjsConfig.serverType === "SAS9") {
-      startsWith = "MPRINT";
-    }
+    let startsWith = "MPRINT";
     const isGeneratedCodeLine = (line: string) =>
       line.trim().startsWith(startsWith);
     const logLines = log.split("\n").filter(isGeneratedCodeLine);
