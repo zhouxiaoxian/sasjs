@@ -405,58 +405,7 @@ export default class SASjs {
       if (!this.sasjsConfig.debug) {
         this.appendSasjsRequest(null, program, null);
       } else {
-        let jsonResponse;
-
-        try {
-          jsonResponse = JSON.parse(response);
-        } catch (e) {
-          console.error("Error parsing json:", e);
-        }
-
-        if (jsonResponse) {
-          const jobUrl = jsonResponse["SYS_JES_JOB_URI"];
-          if (jobUrl) {
-            fetch(this.serverUrl + jobUrl, {
-              method: "GET",
-              referrerPolicy: "same-origin"
-            })
-              .then((res: any) => res.text())
-              .then((res: any) => {
-                let responseJson;
-                let logUri = "";
-                let pgmData = "";
-
-                try {
-                  responseJson = JSON.parse(res);
-                } catch (e) {
-                  console.error("Error parsing json:", e);
-                }
-
-                if (responseJson) {
-                  pgmData = responseJson.jobRequest.jobDefinition.code;
-                  logUri = responseJson.links.find(
-                    (link: { rel: string }) => link.rel === "log"
-                  ).uri;
-                  logUri += "/content";
-
-                  logUri = this.serverUrl + logUri;
-
-                  if (logUri) {
-                    this.fetchLogFileContent(logUri)
-                      .then((logContent: any) => {
-                        this.appendSasjsRequest(logContent, program, pgmData);
-                      })
-                      .catch((err: Error) => {
-                        console.error("error getting log content:", err);
-                      });
-                  }
-                }
-              })
-              .catch((err: Error) => {
-                console.error("Error fetching VIYA job", err);
-              });
-          }
-        }
+        this.appendSasjsRequest(response, program, null);
       }
     }
   }
