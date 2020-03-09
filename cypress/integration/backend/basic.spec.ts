@@ -120,7 +120,7 @@ context("Testing SAS", () => {
       x = x + "X";
     }
     const data: any = { table1: [{ col1: x }] };
-    adapter.request("common/sendObj", data).then((err: any) => {
+    adapter.request("common/sendObj", data).then(null, (err: any) => {
       testFinish();
       console.log(err);
       expect(err.MESSAGE).to.not.be.undefined;

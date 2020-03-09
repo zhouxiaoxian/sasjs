@@ -230,10 +230,7 @@ export default class SASjs {
         requestParams["sasjs_tables"] = sasjsTables.join(" ");
       }
     }
-    if (isError){
-      console.error(errorMsg);
-      return { MESSAGE: errorMsg };
-    }
+    
     for (const key in requestParams) {
       if (requestParams.hasOwnProperty(key)) {
         formData.append(key, requestParams[key]);
@@ -241,6 +238,9 @@ export default class SASjs {
     }
 
     return new Promise((resolve, reject) => {
+      if (isError){
+        reject({MESSAGE: errorMsg});
+      }
       fetch(apiUrl, {
         method: "POST",
         body: formData,
