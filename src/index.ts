@@ -186,6 +186,10 @@ export default class SASjs {
     const formData = new FormData();
 
     if (data) {
+      if (validateStringLength(data)) {
+        console.error("The max length of a string value in SASjs is 32765 characters. ");
+        return { MESSAGE: "The max length of a string value in SASjs is 32765 characters. " }
+      }
       if (this.sasjsConfig.serverType === "SAS9") {
         // file upload approach
         for (const tableName in data) {
@@ -692,4 +696,20 @@ function convertToCSV(data: any) {
     headers.join(",").replace(/,/g, " ") + "\r\n" + csvTest.join("\r\n");
 
   return finalCSV;
+}
+
+function validateStringLength(data: any) {
+  let invalidFound = false;
+  for (const tableName in data) {
+    let table = data[tableName];
+    let headerFields = Object.keys(table[0]);
+    headerFields.forEach(element => {
+      table.forEach((row: any) => {
+        if( typeof row[element] === "string" && row[element].length > 32765 ) {
+          invalidFound = true;
+        }
+      });
+    });
+  }
+  return invalidFound;
 }

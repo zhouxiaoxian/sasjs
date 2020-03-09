@@ -113,6 +113,22 @@ context("Testing SAS", () => {
     });
   });
 
+  it("OBJ, long string greater than (32765) throws error", done => {
+    testStart();
+
+    let x = "X";
+    for (var i = 1; i < 32766; i++) {
+      x = x + "X";
+    }
+    const data: any = { table1: [{ col1: x }] };
+    adapter.request("common/sendObj", data).then((err: any) => {
+      testFinish();
+      console.log(err);
+      expect(err.MESSAGE).to.not.be.undefined;
+      done();
+    });
+  });
+
   it("Bigger data", done => {
     testStart();
 
