@@ -264,6 +264,7 @@ export default class SASjs {
             }
           } else {
             this.retryCount = 0;
+            this.parseLogFromResponse(responseText, program);
 
             if (self.isLogInRequired(responseText)) {
               reject(new Error("login required"));
@@ -272,7 +273,6 @@ export default class SASjs {
                 this.sasjsConfig.serverType === "SAS9" &&
                 this.sasjsConfig.debug
               ) {
-                this.parseLogFromResponse(responseText, program);
                 this.updateUsername(responseText);
                 const jsonResponseText = this.parseSAS9Response(responseText);
 
@@ -294,7 +294,6 @@ export default class SASjs {
                   fetch(this.serverUrl + json_url)
                     .then(res => res.text())
                     .then(resText => {
-                      this.parseLogFromResponse(resText, program);
                       this.updateUsername(resText);
                       try {
                         resolve(JSON.parse(resText));
@@ -306,7 +305,6 @@ export default class SASjs {
                   reject({ MESSAGE: responseText });
                 }
               } else {
-                this.parseLogFromResponse(responseText, program);
                 this.updateUsername(responseText);
                 try {
                   let parsedJson = JSON.parse(responseText);
