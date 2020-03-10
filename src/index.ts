@@ -212,9 +212,10 @@ export default class SASjs {
           tableCounter++;
           sasjsTables.push(tableName);
           const csv = convertToCSV(data[tableName]);
-          if (csv === "ERROR: LARGE STRING LENGTH"){
+          if (csv === "ERROR: LARGE STRING LENGTH") {
             isError = true;
-            errorMsg = "The max length of a string value in SASjs is 32765 characters.";
+            errorMsg =
+              "The max length of a string value in SASjs is 32765 characters.";
           }
           // if csv has length more then 16k, send in chunks
           if (csv.length > 16000) {
@@ -230,7 +231,7 @@ export default class SASjs {
         requestParams["sasjs_tables"] = sasjsTables.join(" ");
       }
     }
-    
+
     for (const key in requestParams) {
       if (requestParams.hasOwnProperty(key)) {
         formData.append(key, requestParams[key]);
@@ -238,8 +239,8 @@ export default class SASjs {
     }
 
     return new Promise((resolve, reject) => {
-      if (isError){
-        reject({MESSAGE: errorMsg});
+      if (isError) {
+        reject({ MESSAGE: errorMsg });
       }
       fetch(apiUrl, {
         method: "POST",
@@ -269,9 +270,10 @@ export default class SASjs {
           if (this.needsRetry(responseText)) {
             if (this.retryCount < this.retryLimit) {
               this.retryCount++;
-              this.request(programName, data, params)
-                .then((res: any) => resolve(res))
-                .catch((err: Error) => reject(err));
+              this.request(programName, data, params).then(
+                (res: any) => resolve(res),
+                (err: any) => reject(err)
+              );
             } else {
               this.retryCount = 0;
               reject(responseText);
@@ -303,8 +305,8 @@ export default class SASjs {
               ) {
                 try {
                   const json_url = responseText
-                    .split('<iframe style=\"width: 99%; height: 500px\" src=\"')[1]
-                    .split('\"></iframe>')[0]
+                    .split('<iframe style="width: 99%; height: 500px" src="')[1]
+                    .split('"></iframe>')[0];
                   fetch(this.serverUrl + json_url)
                     .then(res => res.text())
                     .then(resText => {
@@ -314,7 +316,7 @@ export default class SASjs {
                       } catch (e) {
                         reject({ MESSAGE: resText });
                       }
-                    })
+                    });
                 } catch (e) {
                   reject({ MESSAGE: responseText });
                 }
@@ -360,8 +362,7 @@ export default class SASjs {
       requestParams["_omittextlog"] = "false";
       requestParams["_omitsessionresults"] = "false";
 
-        requestParams["_debug"] = 131;
-
+      requestParams["_debug"] = 131;
     }
 
     return requestParams;
@@ -647,7 +648,7 @@ function convertToCSV(data: any) {
         }
       })
       .sort((a: number, b: number) => b - a)[0];
-    if (longestValueForField && longestValueForField > 32765){
+    if (longestValueForField && longestValueForField > 32765) {
       invalidString = true;
     }
     if (hasMixedTypes) {
@@ -665,7 +666,7 @@ function convertToCSV(data: any) {
     }.`;
   });
 
-  if (invalidString){
+  if (invalidString) {
     return "ERROR: LARGE STRING LENGTH";
   }
   csvTest = data.map((row: any) => {
