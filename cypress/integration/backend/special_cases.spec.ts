@@ -15,7 +15,7 @@ let timestampStart: number, timestampFinish: number;
 
 const debugStates = [Cypress.env("debug"), !Cypress.env("debug")]
 debugStates.forEach(debugState => {
-  context("Testing SAS", () => {
+  context("Testing "+Cypress.env("serverType")+": debug="+debugState, () => {
     before(function() {
       // runs once before all tests in the block
       adapter.setDebugState(debugState)
