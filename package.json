@@ -3,13 +3,23 @@
   "description": "JavaScript adapter for SAS",
   "scripts": {
     "build": "rimraf build && webpack",
-    "package:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm pack",
-    "publish:lib": "npm run build && cp package.json ./build && cp README.md ./build && cd build && npm publish",
+    "package:lib": "npm run build && cd build && npm pack",
+    "publish:lib": "npm run build && cd build && npm publish",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
     "cypress": "./node_modules/.bin/cypress open",
+    "prepublishOnly": "cp -r ./build/* . && rm -rf ./build",
+    "postpublish": "git clean -fd",
     "semantic-release": "semantic-release"
+  },
+  "release": {
+    "plugins": [
+      "@semantic-release/npm",
+      {
+        "pkgRoot": "/build"
+      }
+    ]
   },
   "keywords": [
     "sas",
@@ -29,6 +39,7 @@
     "jest": "^25.1.0",
     "prettier": "^1.19.1",
     "rimraf": "^3.0.2",
+    "semantic-release": "^17.0.4",
     "ts-jest": "^25.2.0",
     "ts-loader": "^6.2.1",
     "tslint": "^6.0.0",
@@ -36,7 +47,6 @@
     "typescript": "^3.7.5",
     "uglifyjs-webpack-plugin": "^2.2.0",
     "webpack": "^4.41.6",
-    "webpack-cli": "^3.3.11",
-    "semantic-release": "^17.0.4"
+    "webpack-cli": "^3.3.11"
   }
 }
