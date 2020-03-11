@@ -19,7 +19,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Semantic Release
-        run: cd build && npm run ../node_modules/.bin/semantic-release
+        run: cd build && npm run semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
