@@ -19,7 +19,7 @@ jobs:
       - name: Build
         run: npm run build
       - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v2
+        run: cd build && run npm run ../node_modules/.bin/semantic-release
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
