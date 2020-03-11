@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-      uses: actions/checkout@v2
+        uses: actions/checkout@v2
   install:
     needs: checkout
     runs-on: ubuntu-latest
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build Project
-      run: npm run build
+        run: npm run build
   release:
     needs: build
     runs-on: ubuntu-latest
