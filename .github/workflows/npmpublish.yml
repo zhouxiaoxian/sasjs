@@ -9,21 +9,13 @@ on:
       - master
 
 jobs:
-  checkout:
+  release:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-  build:
-    needs: checkout
-    runs-on: ubuntu-latest
-    steps:
       - name: Build
         run: npm run build
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v2
         env:
