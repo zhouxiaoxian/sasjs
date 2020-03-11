@@ -9,13 +9,13 @@
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
     "cypress": "./node_modules/.bin/cypress open",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release --debug --dry-run"
   },
   "release": {
     "plugins": [
       "@semantic-release/npm",
       {
-        "pkgRoot": "./build"
+        "pkgRoot": "/build"
       }
     ]
   },
@@ -31,7 +31,6 @@
   "license": "ISC",
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^4.1.2",
-    "@semantic-release/npm": "^7.0.4",
     "@types/jest": "^25.1.2",
     "cp": "^0.2.0",
     "cypress": "^4.1.0",
