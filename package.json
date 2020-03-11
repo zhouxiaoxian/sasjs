@@ -2,14 +2,16 @@
   "name": "sasjs",
   "description": "JavaScript adapter for SAS",
   "scripts": {
-    "build": "rimraf build && webpack && cp package.json ./build && cp README.md ./build",
+    "build": "rimraf build && webpack",
     "package:lib": "npm run build && cd build && npm pack",
     "publish:lib": "npm run build && cd build && npm publish",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "lint": "tslint -p tsconfig.json",
     "test": "jest",
     "cypress": "./node_modules/.bin/cypress open",
-    "semantic-release": "semantic-release --debug --dry-run"
+    "prepublishOnly": "cp -r ./build/* . && rm -rf ./build",
+    "postpublish": "git clean -fd",
+    "semantic-release": "semantic-release"
   },
   "release": {
     "plugins": [
