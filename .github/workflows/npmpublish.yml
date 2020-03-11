@@ -15,6 +15,7 @@ jobs:
       - name: Build
         run: npm run build
   release:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
