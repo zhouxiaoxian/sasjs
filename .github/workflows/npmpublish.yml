@@ -11,7 +11,9 @@ on:
 jobs:
   checkout:
     runs-on: ubuntu-latest
-    uses: actions/checkout@v2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
   build:
     needs: checkout
     runs-on: ubuntu-latest
