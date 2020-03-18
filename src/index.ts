@@ -4,6 +4,7 @@ export interface SASjsRequest {
   sourceCode: string;
   generatedCode: string;
   logFile: string;
+  SASWORK: any;
 }
 
 export class SASjsConfig {
@@ -304,19 +305,16 @@ export default class SASjs {
                 this.sasjsConfig.debug
               ) {
                 try {
-                  const json_url = responseText
-                    .split('<iframe style="width: 99%; height: 500px" src="')[1]
-                    .split('"></iframe>')[0];
-                  fetch(this.serverUrl + json_url)
-                    .then(res => res.text())
-                    .then(resText => {
+                  this.parseSASVIYADebugResponse(responseText).then(
+                    (resText: any) => {
                       this.updateUsername(resText);
                       try {
                         resolve(JSON.parse(resText));
                       } catch (e) {
                         reject({ MESSAGE: resText });
                       }
-                    });
+                    }
+                  );
                 } catch (e) {
                   reject({ MESSAGE: responseText });
                 }
@@ -377,15 +375,32 @@ export default class SASjs {
     }
   }
 
+  private parseSASVIYADebugResponse(response: string) {
+    return new Promise((resolve, reject) => {
+      const json_url = response
+        .split('<iframe style="width: 99%; height: 500px" src="')[1]
+        .split('"></iframe>')[0];
+
+      fetch(this.serverUrl + json_url)
+        .then(res => res.text())
+        .then(resText => {
+          resolve(resText);
+        });
+    });
+  }
+
   private parseSAS9Response(response: string) {
     let sas9Response = "";
-    try {
-      sas9Response = response
-        .split(">>weboutBEGIN<<")[1]
-        .split(">>weboutEND<<")[0];
-    } catch (e) {
-      sas9Response = "";
-      console.error(e);
+
+    if (response.includes(">>weboutBEGIN<<")) {
+      try {
+        sas9Response = response
+          .split(">>weboutBEGIN<<")[1]
+          .split(">>weboutEND<<")[0];
+      } catch (e) {
+        sas9Response = "";
+        console.error(e);
+      }
     }
 
     return sas9Response;
@@ -436,26 +451,52 @@ export default class SASjs {
     });
   }
 
-  private appendSasjsRequest(log: any, program: string, pgmData: any) {
+  private appendSasjsRequest(response: any, program: string, pgmData: any) {
     let sourceCode = "";
     let generatedCode = "";
+    let sasWork = null;
 
-    if (log) {
-      sourceCode = this.parseSourceCode(log);
-      generatedCode = this.parseGeneratedCode(log);
+    if (response) {
+      sourceCode = this.parseSourceCode(response);
+      generatedCode = this.parseGeneratedCode(response);
+      sasWork = this.parseSasWork(response);
     }
 
     this.sasjsRequests.push({
-      logFile: log,
+      logFile: response,
       serviceLink: program,
       timestamp: new Date(),
       sourceCode,
-      generatedCode
+      generatedCode,
+      SASWORK: sasWork
     });
 
     if (this.sasjsRequests.length > 20) {
       this.sasjsRequests.splice(0, 1);
     }
+  }
+
+  private parseSasWork(response: any) {
+    if (this.sasjsConfig.debug) {
+      let jsonResponse;
+
+      if (this.sasjsConfig.serverType === "SAS9") {
+        try {
+          jsonResponse = JSON.parse(this.parseSAS9Response(response));
+        } catch (e) {}
+      } else {
+        this.parseSASVIYADebugResponse(response).then((resText: any) => {
+          try {
+            jsonResponse = JSON.parse(resText);
+          } catch (e) {}
+        });
+      }
+
+      if (jsonResponse) {
+        return jsonResponse.WORK;
+      }
+    }
+    return null;
   }
 
   private parseSourceCode(log: string) {
