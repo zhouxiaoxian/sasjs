@@ -43,13 +43,11 @@ export default class SASjs {
   private sasjsRequests: SASjsRequest[] = [];
   private userName: string = "";
 
-  constructor(config?: SASjsConfig) {
-    if (config) {
-      this.sasjsConfig = config;
-    } else {
-      this.sasjsConfig = defaultConfig;
-    }
-
+  constructor(config?: any) {
+    this.sasjsConfig = {
+      ...defaultConfig,
+      ...config
+    };
     this.setupConfiguration();
   }
 
