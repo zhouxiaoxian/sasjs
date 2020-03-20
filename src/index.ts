@@ -17,7 +17,7 @@ export class SASjsConfig {
 }
 
 const defaultConfig: SASjsConfig = {
-  serverUrl: " ",
+  serverUrl: "",
   port: null,
   pathSAS9: "/SASStoredProcess/do",
   pathSASViya: "/SASJobExecution",
@@ -377,9 +377,9 @@ export default class SASjs {
   private updateUsername(response: any) {
     try {
       const responseJson = JSON.parse(response);
-      if (this.sasjsConfig.serverType === "SAS9"){
+      if (this.sasjsConfig.serverType === "SAS9") {
         this.userName = responseJson["_METAUSER"];
-      }else{
+      } else {
         this.userName = responseJson["SYSUSERID"];
       }
     } catch (e) {
@@ -493,7 +493,7 @@ export default class SASjs {
   }
 
   private setupConfiguration() {
-    if (this.sasjsConfig.serverUrl.slice(-1) === "/"){
+    if (this.sasjsConfig.serverUrl.slice(-1) === "/") {
       this.sasjsConfig.serverUrl = this.sasjsConfig.serverUrl.slice(0, -1);
     }
     this.serverUrl = this.sasjsConfig.port
