@@ -43,12 +43,11 @@ export default class SASjs {
   private sasjsRequests: SASjsRequest[] = [];
   private userName: string = "";
 
-  constructor(config?: SASjsConfig) {
+  constructor(config?: any) {
     this.sasjsConfig = {
       ...defaultConfig,
       ...config
     };
-
     this.setupConfiguration();
   }
 
@@ -191,8 +190,16 @@ export default class SASjs {
       if (this.sasjsConfig.serverType === "SAS9") {
         // file upload approach
         for (const tableName in data) {
+          if (isError) {
+            return;
+          }
           const name = tableName;
           const csv = convertToCSV(data[tableName]);
+          if (csv === "ERROR: LARGE STRING LENGTH") {
+            isError = true;
+            errorMsg =
+              "The max length of a string value in SASjs is 32765 characters.";
+          }
 
           formData.append(
             name,
@@ -370,7 +377,11 @@ export default class SASjs {
   private updateUsername(response: any) {
     try {
       const responseJson = JSON.parse(response);
-      this.userName = responseJson["SYSUSERID"];
+      if (this.sasjsConfig.serverType === "SAS9") {
+        this.userName = responseJson["_METAUSER"];
+      } else {
+        this.userName = responseJson["SYSUSERID"];
+      }
     } catch (e) {
       this.userName = "";
     }
@@ -482,6 +493,9 @@ export default class SASjs {
   }
 
   private setupConfiguration() {
+    if (this.sasjsConfig.serverUrl.slice(-1) === "/") {
+      this.sasjsConfig.serverUrl = this.sasjsConfig.serverUrl.slice(0, -1);
+    }
     this.serverUrl = this.sasjsConfig.port
       ? this.sasjsConfig.serverUrl + ":" + this.sasjsConfig.port
       : this.sasjsConfig.serverUrl;
