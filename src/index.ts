@@ -17,7 +17,7 @@ export class SASjsConfig {
 }
 
 const defaultConfig: SASjsConfig = {
-  serverUrl: " ",
+  serverUrl: "",
   port: null,
   pathSAS9: "/SASStoredProcess/do",
   pathSASViya: "/SASJobExecution",
@@ -44,11 +44,10 @@ export default class SASjs {
   private userName: string = "";
 
   constructor(config?: SASjsConfig) {
-    if (config) {
-      this.sasjsConfig = config;
-    } else {
-      this.sasjsConfig = defaultConfig;
-    }
+    this.sasjsConfig = {
+      ...defaultConfig,
+      ...config
+    };
 
     this.setupConfiguration();
   }
