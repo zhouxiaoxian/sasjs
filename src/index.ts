@@ -8,7 +8,6 @@ export interface SASjsRequest {
 
 export class SASjsConfig {
   serverUrl: string = "";
-  port: number | null = null;
   pathSAS9: string = "";
   pathSASViya: string = "";
   appLoc: string = "";
@@ -18,7 +17,6 @@ export class SASjsConfig {
 
 const defaultConfig: SASjsConfig = {
   serverUrl: "",
-  port: null,
   pathSAS9: "/SASStoredProcess/do",
   pathSASViya: "/SASJobExecution",
   appLoc: "/Public/seedapp",
@@ -493,12 +491,15 @@ export default class SASjs {
   }
 
   private setupConfiguration() {
+    if (this.sasjsConfig.serverUrl === "") {
+      this.sasjsConfig.serverUrl = `${location.protocol}//${location.hostname}:${location.port}`;
+    }
+
     if (this.sasjsConfig.serverUrl.slice(-1) === "/") {
       this.sasjsConfig.serverUrl = this.sasjsConfig.serverUrl.slice(0, -1);
     }
-    this.serverUrl = this.sasjsConfig.port
-      ? this.sasjsConfig.serverUrl + ":" + this.sasjsConfig.port
-      : this.sasjsConfig.serverUrl;
+    
+    this.serverUrl = this.sasjsConfig.serverUrl;
     this.jobsPath =
       this.sasjsConfig.serverType === "SASVIYA"
         ? this.sasjsConfig.pathSASViya
