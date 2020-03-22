@@ -6,6 +6,17 @@ export interface SASjsRequest {
   logFile: string;
 }
 
+export interface SASjsWatingRequest {
+  requestPromise: {
+    promise: any,
+    resolve: any,
+    reject: any
+  },
+  programName: string;
+  data: any;
+  params?: any
+}
+
 export class SASjsConfig {
   serverUrl: string = "";
   port: number | null = null;
@@ -41,6 +52,7 @@ export default class SASjs {
   private retryCount: number = 0;
   private retryLimit: number = 5;
   private sasjsRequests: SASjsRequest[] = [];
+  private sasjsWaitingRequests: SASjsWatingRequest[] = [];
   private userName: string = "";
 
   constructor(config?: any) {
@@ -118,6 +130,8 @@ export default class SASjs {
 
     const { isLoggedIn } = await this.checkSession();
     if (isLoggedIn) {
+      this.resendWaitingRequests();
+
       return Promise.resolve({
         isLoggedIn,
         userName: this.userName
@@ -140,10 +154,18 @@ export default class SASjs {
       })
     })
       .then(response => response.text())
-      .then(responseText => ({
-        isLoggedIn: !this.isLogInRequired(responseText),
-        userName: this.userName
-      }))
+      .then(responseText => {
+        let isLoggedIn = !this.isLogInRequired(responseText);
+
+        if (isLoggedIn) {
+          this.resendWaitingRequests();
+        }
+
+        return {
+          isLoggedIn: isLoggedIn,
+          userName: this.userName
+        };
+      })
       .catch(e => Promise.reject(e));
   }
 
@@ -183,6 +205,7 @@ export default class SASjs {
 
     const formData = new FormData();
 
+    let logInRequired = false;
     let isError = false;
     let errorMsg = "";
 
@@ -244,7 +267,18 @@ export default class SASjs {
       }
     }
 
-    return new Promise((resolve, reject) => {
+    let sasjsWaitingRequest: SASjsWatingRequest = {
+      requestPromise: {
+        promise: null,
+        resolve: null,
+        reject: null
+      },
+      programName: programName,
+      data: data,
+      params: params
+    };
+
+    sasjsWaitingRequest.requestPromise.promise = new Promise((resolve, reject) => {
       if (isError) {
         reject({ MESSAGE: errorMsg });
       }
@@ -289,7 +323,10 @@ export default class SASjs {
             this.parseLogFromResponse(responseText, program);
 
             if (self.isLogInRequired(responseText)) {
-              reject(new Error("login required"));
+              logInRequired = true;
+              sasjsWaitingRequest.requestPromise.resolve = resolve;
+              sasjsWaitingRequest.requestPromise.reject = reject;
+              // reject(new Error("login required"));
             } else {
               if (
                 this.sasjsConfig.serverType === "SAS9" &&
@@ -342,6 +379,25 @@ export default class SASjs {
           reject(e);
         });
     });
+
+    if (logInRequired) {
+      this.sasjsWaitingRequests.push(sasjsWaitingRequest);
+    }
+
+    return sasjsWaitingRequest.requestPromise.promise;
+  }
+
+  private async resendWaitingRequests() {
+    for (let sasjsWaitingRequest of this.sasjsWaitingRequests) {
+      this.request(sasjsWaitingRequest.programName, sasjsWaitingRequest.data, sasjsWaitingRequest.params)
+      .then((res: any) => {
+        sasjsWaitingRequest.requestPromise.resolve(res);
+      }, (err: any) => {
+        sasjsWaitingRequest.requestPromise.reject(err);
+      });
+    }
+
+    this.sasjsWaitingRequests = [];
   }
 
   private needsRetry(responseText: string): boolean {
