@@ -8,13 +8,13 @@ export interface SASjsRequest {
 
 export interface SASjsWatingRequest {
   requestPromise: {
-    promise: any,
-    resolve: any,
-    reject: any
-  },
+    promise: any;
+    resolve: any;
+    reject: any;
+  };
   programName: string;
   data: any;
-  params?: any
+  params?: any;
 }
 
 export class SASjsConfig {
@@ -278,107 +278,111 @@ export default class SASjs {
       params: params
     };
 
-    sasjsWaitingRequest.requestPromise.promise = new Promise((resolve, reject) => {
-      if (isError) {
-        reject({ MESSAGE: errorMsg });
-      }
-      fetch(apiUrl, {
-        method: "POST",
-        body: formData,
-        referrerPolicy: "same-origin"
-      })
-        .then(response => {
-          if (!response.ok) {
-            if (response.status === 403) {
-              const tokenHeader = response.headers.get("X-CSRF-HEADER");
+    sasjsWaitingRequest.requestPromise.promise = new Promise(
+      (resolve, reject) => {
+        if (isError) {
+          reject({ MESSAGE: errorMsg });
+        }
+        fetch(apiUrl, {
+          method: "POST",
+          body: formData,
+          referrerPolicy: "same-origin"
+        })
+          .then(response => {
+            if (!response.ok) {
+              if (response.status === 403) {
+                const tokenHeader = response.headers.get("X-CSRF-HEADER");
 
-              if (tokenHeader) {
-                const token = response.headers.get(tokenHeader);
+                if (tokenHeader) {
+                  const token = response.headers.get(tokenHeader);
 
-                this._csrf = token;
+                  this._csrf = token;
+                }
               }
             }
-          }
 
-          if (response.redirected && this.sasjsConfig.serverType === "SAS9") {
-            return "redirected response - retry request";
-          }
+            if (response.redirected && this.sasjsConfig.serverType === "SAS9") {
+              return "redirected response - retry request";
+            }
 
-          return response.text();
-        })
-        .then(responseText => {
-          if (this.needsRetry(responseText)) {
-            if (this.retryCount < this.retryLimit) {
-              this.retryCount++;
-              this.request(programName, data, params).then(
-                (res: any) => resolve(res),
-                (err: any) => reject(err)
-              );
+            return response.text();
+          })
+          .then(responseText => {
+            if (this.needsRetry(responseText)) {
+              if (this.retryCount < this.retryLimit) {
+                this.retryCount++;
+                this.request(programName, data, params).then(
+                  (res: any) => resolve(res),
+                  (err: any) => reject(err)
+                );
+              } else {
+                this.retryCount = 0;
+                reject(responseText);
+              }
             } else {
               this.retryCount = 0;
-              reject(responseText);
-            }
-          } else {
-            this.retryCount = 0;
-            this.parseLogFromResponse(responseText, program);
+              this.parseLogFromResponse(responseText, program);
 
-            if (self.isLogInRequired(responseText)) {
-              logInRequired = true;
-              sasjsWaitingRequest.requestPromise.resolve = resolve;
-              sasjsWaitingRequest.requestPromise.reject = reject;
-              // reject(new Error("login required"));
-            } else {
-              if (
-                this.sasjsConfig.serverType === "SAS9" &&
-                this.sasjsConfig.debug
-              ) {
-                this.updateUsername(responseText);
-                const jsonResponseText = this.parseSAS9Response(responseText);
-
-                if (jsonResponseText !== "") {
-                  resolve(JSON.parse(jsonResponseText));
-                } else {
-                  reject({
-                    MESSAGE: this.parseSAS9ErrorResponse(responseText)
-                  });
-                }
-              } else if (
-                this.sasjsConfig.serverType === "SASVIYA" &&
-                this.sasjsConfig.debug
-              ) {
-                try {
-                  const json_url = responseText
-                    .split('<iframe style="width: 99%; height: 500px" src="')[1]
-                    .split('"></iframe>')[0];
-                  fetch(this.serverUrl + json_url)
-                    .then(res => res.text())
-                    .then(resText => {
-                      this.updateUsername(resText);
-                      try {
-                        resolve(JSON.parse(resText));
-                      } catch (e) {
-                        reject({ MESSAGE: resText });
-                      }
-                    });
-                } catch (e) {
-                  reject({ MESSAGE: responseText });
-                }
+              if (self.isLogInRequired(responseText)) {
+                logInRequired = true;
+                sasjsWaitingRequest.requestPromise.resolve = resolve;
+                sasjsWaitingRequest.requestPromise.reject = reject;
+                // reject(new Error("login required"));
               } else {
-                this.updateUsername(responseText);
-                try {
-                  let parsedJson = JSON.parse(responseText);
-                  resolve(parsedJson);
-                } catch (e) {
-                  reject({ MESSAGE: responseText });
+                if (
+                  this.sasjsConfig.serverType === "SAS9" &&
+                  this.sasjsConfig.debug
+                ) {
+                  this.updateUsername(responseText);
+                  const jsonResponseText = this.parseSAS9Response(responseText);
+
+                  if (jsonResponseText !== "") {
+                    resolve(JSON.parse(jsonResponseText));
+                  } else {
+                    reject({
+                      MESSAGE: this.parseSAS9ErrorResponse(responseText)
+                    });
+                  }
+                } else if (
+                  this.sasjsConfig.serverType === "SASVIYA" &&
+                  this.sasjsConfig.debug
+                ) {
+                  try {
+                    const json_url = responseText
+                      .split(
+                        '<iframe style="width: 99%; height: 500px" src="'
+                      )[1]
+                      .split('"></iframe>')[0];
+                    fetch(this.serverUrl + json_url)
+                      .then(res => res.text())
+                      .then(resText => {
+                        this.updateUsername(resText);
+                        try {
+                          resolve(JSON.parse(resText));
+                        } catch (e) {
+                          reject({ MESSAGE: resText });
+                        }
+                      });
+                  } catch (e) {
+                    reject({ MESSAGE: responseText });
+                  }
+                } else {
+                  this.updateUsername(responseText);
+                  try {
+                    let parsedJson = JSON.parse(responseText);
+                    resolve(parsedJson);
+                  } catch (e) {
+                    reject({ MESSAGE: responseText });
+                  }
                 }
               }
             }
-          }
-        })
-        .catch((e: Error) => {
-          reject(e);
-        });
-    });
+          })
+          .catch((e: Error) => {
+            reject(e);
+          });
+      }
+    );
 
     if (logInRequired) {
       this.sasjsWaitingRequests.push(sasjsWaitingRequest);
@@ -389,12 +393,18 @@ export default class SASjs {
 
   private async resendWaitingRequests() {
     for (let sasjsWaitingRequest of this.sasjsWaitingRequests) {
-      this.request(sasjsWaitingRequest.programName, sasjsWaitingRequest.data, sasjsWaitingRequest.params)
-      .then((res: any) => {
-        sasjsWaitingRequest.requestPromise.resolve(res);
-      }, (err: any) => {
-        sasjsWaitingRequest.requestPromise.reject(err);
-      });
+      this.request(
+        sasjsWaitingRequest.programName,
+        sasjsWaitingRequest.data,
+        sasjsWaitingRequest.params
+      ).then(
+        (res: any) => {
+          sasjsWaitingRequest.requestPromise.resolve(res);
+        },
+        (err: any) => {
+          sasjsWaitingRequest.requestPromise.reject(err);
+        }
+      );
     }
 
     this.sasjsWaitingRequests = [];
