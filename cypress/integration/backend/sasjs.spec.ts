@@ -30,6 +30,8 @@ debugStates.forEach(debugState => {
         adapter.request("common/sendArr", data).then((res: any) => {
           testFinish();
 
+          console.log("Request after login:", res);
+
           expect(res.table1[0][0], getTestExecTime()).to.not.be.undefined;
           expect(res.table1[0][0]).to.be.equal(data.table1[0].col1);
           done();
@@ -38,13 +40,15 @@ debugStates.forEach(debugState => {
         setTimeout(() => {
           adapter.logIn(Cypress.env("username"), Cypress.env("password")).then(
             (res: any) => {
-              expect(res.isLoggedIn).to.equal(true);
+              console.log(res);
             },
             err => {
               console.log(err);
             }
           );
-        }, 2000);
+        }, 5000);
+
+        cy.wait(10000);
       });
     }
   );

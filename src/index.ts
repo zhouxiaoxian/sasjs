@@ -278,6 +278,8 @@ export default class SASjs {
       params: params
     };
 
+    let isRedirected = false;
+
     sasjsWaitingRequest.requestPromise.promise = new Promise(
       (resolve, reject) => {
         if (isError) {
@@ -288,7 +290,7 @@ export default class SASjs {
           body: formData,
           referrerPolicy: "same-origin"
         })
-          .then(response => {
+          .then(async response => {
             if (!response.ok) {
               if (response.status === 403) {
                 const tokenHeader = response.headers.get("X-CSRF-HEADER");
@@ -300,15 +302,15 @@ export default class SASjs {
                 }
               }
             }
-
+            
             if (response.redirected && this.sasjsConfig.serverType === "SAS9") {
-              return "redirected response - retry request";
+              isRedirected = true;
             }
 
             return response.text();
           })
           .then(responseText => {
-            if (this.needsRetry(responseText)) {
+            if ((this.needsRetry(responseText) || isRedirected) && !this.isLogInRequired(responseText)) {
               if (this.retryCount < this.retryLimit) {
                 this.retryCount++;
                 this.request(programName, data, params).then(
@@ -327,7 +329,7 @@ export default class SASjs {
                 logInRequired = true;
                 sasjsWaitingRequest.requestPromise.resolve = resolve;
                 sasjsWaitingRequest.requestPromise.reject = reject;
-                // reject(new Error("login required"));
+                this.sasjsWaitingRequests.push(sasjsWaitingRequest);
               } else {
                 if (
                   this.sasjsConfig.serverType === "SAS9" &&
@@ -384,10 +386,6 @@ export default class SASjs {
       }
     );
 
-    if (logInRequired) {
-      this.sasjsWaitingRequests.push(sasjsWaitingRequest);
-    }
-
     return sasjsWaitingRequest.requestPromise.promise;
   }
 
@@ -418,8 +416,7 @@ export default class SASjs {
       (responseText.includes('"status":449') &&
         responseText.includes(
           "Authentication success, retry original request"
-        )) ||
-      responseText.includes("redirected response - retry request")
+        ))
     );
   }
 
