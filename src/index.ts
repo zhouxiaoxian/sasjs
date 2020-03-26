@@ -300,7 +300,7 @@ export default class SASjs {
                 }
               }
             }
-            
+
             if (response.redirected && this.sasjsConfig.serverType === "SAS9") {
               isRedirected = true;
             }
@@ -308,7 +308,10 @@ export default class SASjs {
             return response.text();
           })
           .then(responseText => {
-            if ((this.needsRetry(responseText) || isRedirected) && !this.isLogInRequired(responseText)) {
+            if (
+              (this.needsRetry(responseText) || isRedirected) &&
+              !this.isLogInRequired(responseText)
+            ) {
               if (this.retryCount < this.retryLimit) {
                 this.retryCount++;
                 this.request(programName, data, params).then(
@@ -412,9 +415,7 @@ export default class SASjs {
         responseText.includes("_csrf") &&
         responseText.includes("X-CSRF-TOKEN")) ||
       (responseText.includes('"status":449') &&
-        responseText.includes(
-          "Authentication success, retry original request"
-        ))
+        responseText.includes("Authentication success, retry original request"))
     );
   }
 
@@ -561,7 +562,7 @@ export default class SASjs {
     if (this.sasjsConfig.serverUrl.slice(-1) === "/") {
       this.sasjsConfig.serverUrl = this.sasjsConfig.serverUrl.slice(0, -1);
     }
-    
+
     this.serverUrl = this.sasjsConfig.serverUrl;
     this.jobsPath =
       this.sasjsConfig.serverType === "SASVIYA"
@@ -788,6 +789,6 @@ function convertToCSV(data: any) {
 
   let finalCSV =
     headers.join(",").replace(/,/g, " ") + "\r\n" + csvTest.join("\r\n");
-
+  console.log(finalCSV);
   return finalCSV;
 }

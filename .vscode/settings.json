@@ -3,5 +3,7 @@
   "python.pythonPath": "/usr/local/bin/python3",
   "restructuredtext.linter.extraArgs": [
     "--ignore D001"
-]
+  ],
+  "editor.formatOnSave": true,
+  "editor.formatOnPaste": true
 }
