@@ -3,13 +3,21 @@ import SASjs from "../../../src/index";
 
 const adapter = new SASjs({
   serverUrl: Cypress.env("serverUrl"),
-  port: Cypress.env("port"),
   pathSAS9: "/SASStoredProcess/do",
   pathSASViya: "/SASJobExecution",
   appLoc: Cypress.env("appLoc"),
   serverType: Cypress.env("serverType"),
   debug: Cypress.env("debug")
 });
+
+const defaultConfig = {
+  serverUrl: " ",
+  pathSAS9: "/SASStoredProcess/do",
+  pathSASViya: "/SASJobExecution",
+  appLoc: "/Public/seedapp",
+  serverType: "SASVIYA",
+  debug: true
+};
 
 let timestampStart: number, timestampFinish: number;
 
@@ -46,8 +54,58 @@ debugStates.forEach(debugState => {
         });
       });
 
-      it("ARR, single string value", done => {
-        testStart();
+    it("sasjs instantiated with no properties", done => {
+      testStart();
+      const sasjsObj = new SASjs();
+      const sasConfig = sasjsObj.getSasjsConfig();
+      testFinish();
+      expect(sasConfig.serverUrl).to.be.equal(defaultConfig.serverUrl),
+      expect(sasConfig.pathSAS9).to.be.equal(defaultConfig.pathSAS9);
+      expect(sasConfig.pathSASViya).to.be.equal(defaultConfig.pathSASViya);
+      expect(sasConfig.appLoc).to.be.equal(defaultConfig.appLoc);
+      expect(sasConfig.serverType).to.be.equal(defaultConfig.serverType);
+      expect(sasConfig.debug).to.be.equal(defaultConfig.debug);
+      done();
+    });
+
+    it("sasjs instantiated with 2 properties", done => {
+      testStart();
+      const sasjsObj = new SASjs({serverType: "C1", debug: false});
+      const sasConfig = sasjsObj.getSasjsConfig();
+      testFinish();
+      expect(sasConfig.serverUrl).to.be.equal(defaultConfig.serverUrl),
+      expect(sasConfig.pathSAS9).to.be.equal(defaultConfig.pathSAS9);
+      expect(sasConfig.pathSASViya).to.be.equal(defaultConfig.pathSASViya);
+      expect(sasConfig.appLoc).to.be.equal(defaultConfig.appLoc);
+      expect(sasConfig.serverType).to.be.equal("C1");
+      expect(sasConfig.debug).to.be.equal(false);
+      done();
+    });
+
+    it("sasjs instantiated with all properties", done => {
+      testStart();
+      const config = {
+        serverUrl: "url",
+        pathSAS9: "sas9",
+        pathSASViya: "viya",
+        appLoc: "/Public/seedapp",
+        serverType: "TYPE",
+        debug: false
+      };
+      const sasjsObj = new SASjs(config);
+      const sasConfig = sasjsObj.getSasjsConfig();
+      testFinish();
+      expect(sasConfig.serverUrl).to.be.equal(config.serverUrl),
+      expect(sasConfig.pathSAS9).to.be.equal(config.pathSAS9);
+      expect(sasConfig.pathSASViya).to.be.equal(config.pathSASViya);
+      expect(sasConfig.appLoc).to.be.equal(config.appLoc);
+      expect(sasConfig.serverType).to.be.equal(config.serverType);
+      expect(sasConfig.debug).to.be.equal(config.debug);
+      done();
+    });
+
+    it("ARR, single string value", done => {
+      testStart();
 
         const data: any = { table1: [{ col1: "first col value" }] };
         adapter.request("common/sendArr", data).then((res: any) => {
