@@ -751,7 +751,8 @@ function convertToCSV(data: any) {
     const fields = Object.keys(row).map((fieldName, index) => {
       let value;
       let containsSpecialChar = false;
-      const currentCell = row[fieldName];
+
+      const currentCell = row[fieldName] !== undefined ? row[fieldName] : null;
 
       if (JSON.stringify(currentCell).search(/(\\t|\\n|\\r)/gm) > -1) {
         value = currentCell.toString();
