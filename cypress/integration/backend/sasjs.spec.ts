@@ -23,6 +23,15 @@ debugStates.forEach(debugState => {
         adapter.setDebugState(debugState);
       });
 
+      it("Multiple login tries with wrong credentials", async done => {
+        for (let i = 1; i < 3; i++) {
+          let res = await adapter.logIn(Cypress.env("username"), Cypress.env("password"));
+
+          expect(res).to.not.be.undefined;
+          expect(res.isLoggedIn).to.be.false;
+        }
+      });
+
       it("Retry request after login", done => {
         testStart();
 
