@@ -218,7 +218,7 @@ debugStates.forEach(debugState => {
       testStart();
 
       const data: any = {
-        table1: [{ col1: 42, col2: 1.618, col3: "x", col4: "x" }]
+        table1: [{ col1: 42, col2: 1613.001123456, col3: "x", col4: "x" }]
       };
       adapter.request("common/sendArr", data).then((res: any) => {
         testFinish();
