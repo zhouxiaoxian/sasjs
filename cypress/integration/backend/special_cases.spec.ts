@@ -3,7 +3,6 @@ import SASjs from "../../../src/index";
 
 const adapter = new SASjs({
   serverUrl: Cypress.env("serverUrl"),
-  port: Cypress.env("port"),
   pathSAS9: "/SASStoredProcess/do",
   pathSASViya: "/SASJobExecution",
   appLoc: Cypress.env("appLoc"),
