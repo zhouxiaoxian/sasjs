@@ -153,8 +153,19 @@ export default class SASjs {
       })
     })
       .then(response => response.text())
-      .then(responseText => {
-        let isLoggedIn = !this.isLogInRequired(responseText);
+      .then(async responseText => {
+        let authFormRes: any;
+        let isLoggedIn: boolean;
+
+        if (this.isAuthorizeFormRequired(responseText)) {
+          authFormRes = await this.parseAndSubmitAuthorizeForm(responseText);
+        }
+
+        if (authFormRes.includes('you are signed in')) {
+          isLoggedIn = true;
+        } else {
+          isLoggedIn = !this.isLogInRequired(responseText);
+        }
 
         if (isLoggedIn) {
           this.resendWaitingRequests();
@@ -188,7 +199,7 @@ export default class SASjs {
    * @param data - an object containing the data to be posted
    * @param params - an optional object with any additional parameters
    */
-  public async request(programName: string, data: any, params?: any) {
+  public async request(programName: string, data: any, params?: any, loginRequiredCallback?: any) {
     const program = this.appLoc
       ? this.appLoc.replace(/\/?$/, "/") + programName.replace(/^\//, "")
       : programName;
@@ -280,11 +291,11 @@ export default class SASjs {
     let isRedirected = false;
 
     sasjsWaitingRequest.requestPromise.promise = new Promise(
-      (resolve, reject) => {
+       (resolve, reject) => {
         if (isError) {
           reject({ MESSAGE: errorMsg });
         }
-        fetch(apiUrl, {
+         fetch(apiUrl, {
           method: "POST",
           body: formData,
           referrerPolicy: "same-origin"
@@ -301,7 +312,7 @@ export default class SASjs {
                 }
               }
             }
-            
+
             if (response.redirected && this.sasjsConfig.serverType === "SAS9") {
               isRedirected = true;
             }
@@ -309,7 +320,10 @@ export default class SASjs {
             return response.text();
           })
           .then(responseText => {
-            if ((this.needsRetry(responseText) || isRedirected) && !this.isLogInRequired(responseText)) {
+            if (
+              (this.needsRetry(responseText) || isRedirected) &&
+              !this.isLogInRequired(responseText)
+            ) {
               if (this.retryCount < this.retryLimit) {
                 this.retryCount++;
                 this.request(programName, data, params).then(
@@ -325,6 +339,7 @@ export default class SASjs {
               this.parseLogFromResponse(responseText, program);
 
               if (self.isLogInRequired(responseText)) {
+                loginRequiredCallback(true);
                 logInRequired = true;
                 sasjsWaitingRequest.requestPromise.resolve = resolve;
                 sasjsWaitingRequest.requestPromise.reject = reject;
@@ -349,21 +364,14 @@ export default class SASjs {
                   this.sasjsConfig.debug
                 ) {
                   try {
-                    const json_url = responseText
-                      .split(
-                        '<iframe style="width: 99%; height: 500px" src="'
-                      )[1]
-                      .split('"></iframe>')[0];
-                    fetch(this.serverUrl + json_url)
-                      .then(res => res.text())
-                      .then(resText => {
-                        this.updateUsername(resText);
+                    this.parseSASVIYADebugResponse(responseText).then((resText: any) => {
+                      this.updateUsername(resText);
                         try {
                           resolve(JSON.parse(resText));
                         } catch (e) {
                           reject({ MESSAGE: resText });
                         }
-                      });
+                    }, (err: any) => {reject({ MESSAGE: err })});
                   } catch (e) {
                     reject({ MESSAGE: responseText });
                   }
@@ -413,9 +421,7 @@ export default class SASjs {
         responseText.includes("_csrf") &&
         responseText.includes("X-CSRF-TOKEN")) ||
       (responseText.includes('"status":449') &&
-        responseText.includes(
-          "Authentication success, retry original request"
-        ))
+        responseText.includes("Authentication success, retry original request"))
     );
   }
 
@@ -451,15 +457,22 @@ export default class SASjs {
 
   private parseSASVIYADebugResponse(response: string) {
     return new Promise((resolve, reject) => {
-      const json_url = response
-        .split('<iframe style="width: 99%; height: 500px" src="')[1]
-        .split('"></iframe>')[0];
+      const iframe_start = response.split(
+        '<iframe style="width: 99%; height: 500px" src="'
+      )[1];
+      const json_url = iframe_start
+        ? iframe_start.split('"></iframe>')[0]
+        : null;
 
-      fetch(this.serverUrl + json_url)
-        .then(res => res.text())
-        .then(resText => {
-          resolve(resText);
-        });
+      if (json_url) {
+        fetch(this.serverUrl + json_url)
+          .then(res => res.text())
+          .then(resText => {
+            resolve(resText);
+          });
+      } else {
+        reject("No debug info in response");
+      }
     });
   }
 
@@ -525,7 +538,7 @@ export default class SASjs {
     });
   }
 
-  private appendSasjsRequest(response: any, program: string, pgmData: any) {
+  private async appendSasjsRequest(response: any, program: string, pgmData: any) {
     let sourceCode = "";
     let generatedCode = "";
     let sasWork = null;
@@ -533,7 +546,7 @@ export default class SASjs {
     if (response) {
       sourceCode = this.parseSourceCode(response);
       generatedCode = this.parseGeneratedCode(response);
-      sasWork = this.parseSasWork(response);
+      sasWork = await this.parseSasWork(response);
     }
 
     this.sasjsRequests.push({
@@ -550,7 +563,7 @@ export default class SASjs {
     }
   }
 
-  private parseSasWork(response: any) {
+  private async parseSasWork(response: any) {
     if (this.sasjsConfig.debug) {
       let jsonResponse;
 
@@ -559,10 +572,12 @@ export default class SASjs {
           jsonResponse = JSON.parse(this.parseSAS9Response(response));
         } catch (e) {}
       } else {
-        this.parseSASVIYADebugResponse(response).then((resText: any) => {
+        await this.parseSASVIYADebugResponse(response).then((resText: any) => {
           try {
             jsonResponse = JSON.parse(resText);
           } catch (e) {}
+        }, (err: any) =>{
+          console.log(err);
         });
       }
 
@@ -605,7 +620,7 @@ export default class SASjs {
     if (this.sasjsConfig.serverUrl.slice(-1) === "/") {
       this.sasjsConfig.serverUrl = this.sasjsConfig.serverUrl.slice(0, -1);
     }
-    
+
     this.serverUrl = this.sasjsConfig.serverUrl;
     this.jobsPath =
       this.sasjsConfig.serverType === "SASVIYA"
@@ -647,6 +662,64 @@ export default class SASjs {
 
     return tempLoginLinkArray.join(".");
   };
+
+  public isAuthorizeFormRequired(response: any) {
+    return /<form.+action="(.*Logon\/oauth\/authorize[^"]*).*>/gm.test(
+      response
+    );
+  }
+
+  public async parseAndSubmitAuthorizeForm(response: any) {
+    let authUrl: string | null = null;
+    let params: any = {};
+
+    let responseBody = response.split("<body>")[1].split("</body>")[0];
+    let bodyElement = document.createElement("div");
+    bodyElement.innerHTML = responseBody;
+
+    let form = bodyElement.querySelector("#application_authorization");
+    authUrl = form
+      ? this.sasjsConfig.serverUrl + form.getAttribute("action")
+      : null;
+
+    let inputs: any = form?.querySelectorAll("input");
+
+    for (let input of inputs) {
+      if (input.name === "user_oauth_approval") {
+        input.value = "true";
+      }
+
+      params[input.name] = input.value;
+    }
+
+    let formData = new FormData();
+
+    for (const key in params) {
+      if (params.hasOwnProperty(key)) {
+        formData.append(key, params[key]);
+      }
+    }
+
+    return new Promise((resolve, reject) => {
+      if (authUrl) {
+        fetch(authUrl, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+          headers: new Headers({
+            "Content-Type": "application/x-www-form-urlencoded"
+          })
+        })
+          .then(res => res.text())
+          .then(res => {
+            console.log(res);
+            resolve(res);
+          });
+      } else {
+        reject("Auth form url is null");
+      }
+    });
+  }
 
   private async getLoginForm() {
     const pattern: RegExp = /<form.+action="(.*Logon[^"]*).*>/;
