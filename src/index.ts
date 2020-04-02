@@ -338,7 +338,15 @@ export default class SASjs {
                   const jsonResponseText = this.parseSAS9Response(responseText);
 
                   if (jsonResponseText !== "") {
-                    resolve(JSON.parse(jsonResponseText));
+                    try {
+                      let parsedJson = JSON.parse(jsonResponseText);
+
+                      if (parsedJson) resolve(parsedJson);
+                    } catch(e) {
+                      reject({
+                        MESSAGE: "JSON recieved from the server is invalid"
+                      });
+                    }
                   } else {
                     reject({
                       MESSAGE: this.parseSAS9ErrorResponse(responseText)
