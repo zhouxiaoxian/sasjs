@@ -188,7 +188,7 @@ export default class SASjs {
    * @param data - an object containing the data to be posted
    * @param params - an optional object with any additional parameters
    */
-  public async request(programName: string, data: any, params?: any) {
+  public async request(programName: string, data: any, params?: any, loginRequiredCallback?: any) {
     const program = this.appLoc
       ? this.appLoc.replace(/\/?$/, "/") + programName.replace(/^\//, "")
       : programName;
@@ -325,6 +325,7 @@ export default class SASjs {
               this.parseLogFromResponse(responseText, program);
 
               if (self.isLogInRequired(responseText)) {
+                if (loginRequiredCallback) loginRequiredCallback(true);
                 logInRequired = true;
                 sasjsWaitingRequest.requestPromise.resolve = resolve;
                 sasjsWaitingRequest.requestPromise.reject = reject;
