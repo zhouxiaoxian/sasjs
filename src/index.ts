@@ -154,7 +154,7 @@ export default class SASjs {
     })
       .then(response => response.text())
       .then(responseText => {
-        let isLoggedIn = !this.isLogInRequired(responseText);
+        let isLoggedIn = this.isLogInSuccess(responseText);
 
         if (isLoggedIn) {
           this.resendWaitingRequests();
@@ -668,11 +668,13 @@ export default class SASjs {
     }
     return Object.keys(formInputs).length ? formInputs : null;
   }
+    
+  private isLogInSuccess = (response: any) => /You have signed in/gm.test(response);
 
   private isLogInRequired = (response: any) => {
-    const pattern: RegExp = /<form.+action="(.*Logon[^"]*).*>/;
-    const matches = pattern.exec(response);
-    return !!(matches && matches.length);
+    const pattern: RegExp = /<form.+action="(.*Logon[^"]*).*>/gm;
+    const matches = pattern.test(response);
+    return matches;
   };
 }
 
