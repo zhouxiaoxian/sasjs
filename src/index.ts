@@ -806,6 +806,8 @@ function convertToCSV(data: any) {
         value = JSON.stringify(currentCell, replacer);
       }
 
+      value = value.replace(/\\\\/gm, "\\");
+
       if (containsSpecialChar) {
         if (value.includes(",") || value.includes('"')) {
           value = '"' + value + '"';

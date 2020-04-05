@@ -73,6 +73,7 @@ debugStates.forEach(debugState => {
           ,pct:'%percent'
           ,speech:"\"speech"
           ,slash:"\\slash"
+          ,slashWithSpecial:"\\\tslash"
           ,macvar:'&sysuserid'
           ,chinese: "传/傳chinese"
           ,sigma:"Σsigma"
