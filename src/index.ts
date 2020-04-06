@@ -155,12 +155,14 @@ export default class SASjs {
       .then(response => response.text())
       .then(async responseText => {
         let authFormRes: any;
-        let isLoggedIn = this.isLogInSuccess(responseText);
+        let isLoggedIn;
 
-        if (this.isAuthorizeFormRequired(responseText) && !isLoggedIn) {
+        if (this.isAuthorizeFormRequired(responseText)) {
           authFormRes = await this.parseAndSubmitAuthorizeForm(responseText);
-
-          isLoggedIn = this.isLogInSuccess(authFormRes);
+          isLoggedIn = authFormRes.includes('Authentication success, retry original request');
+        } else {
+          isLoggedIn = this.isLogInSuccess(responseText);
+          if (!isLoggedIn) isLoggedIn = !this.isLogInRequired(responseText);
         }
 
         if (isLoggedIn) {
@@ -416,6 +418,8 @@ export default class SASjs {
       (responseText.includes('"errorCode":403') &&
         responseText.includes("_csrf") &&
         responseText.includes("X-CSRF-TOKEN")) ||
+        (responseText.includes('"status":403') &&
+        responseText.includes('"error":"Forbidden"')) ||
       (responseText.includes('"status":449') &&
         responseText.includes("Authentication success, retry original request"))
     );
@@ -702,13 +706,10 @@ export default class SASjs {
           method: "POST",
           credentials: "include",
           body: formData,
-          headers: new Headers({
-            "Content-Type": "application/x-www-form-urlencoded"
-          })
+          referrerPolicy: "same-origin"
         })
           .then(res => res.text())
           .then(res => {
-            console.log(res);
             resolve(res);
           });
       } else {
