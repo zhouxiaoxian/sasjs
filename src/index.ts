@@ -613,7 +613,7 @@ export default class SASjs {
   }
 
   private setupConfiguration() {
-    if (this.sasjsConfig.serverUrl === undefined || this this.sasjsConfig.serverUrl === "") {
+    if (this.sasjsConfig.serverUrl === undefined || this.sasjsConfig.serverUrl === "") {
       this.sasjsConfig.serverUrl = `${location.protocol}//${location.hostname}:${location.port}`;
     }
 
