@@ -1,3 +1,6 @@
+import 'isomorphic-fetch';
+import * as e6p from "es6-promise";
+(e6p as any).polyfill();
 export interface SASjsRequest {
   serviceLink: string;
   timestamp: Date;
